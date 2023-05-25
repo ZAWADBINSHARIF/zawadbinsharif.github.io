@@ -30,6 +30,8 @@ body{
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    padding: 24px 0;
+    text-align: center;
 }
 
 #profile-img>img{
