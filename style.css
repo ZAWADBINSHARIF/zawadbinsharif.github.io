@@ -26,18 +26,17 @@ body{
     cursor:grab
 }
 
-.animation{
+.animation, .skill-icon{
     transition: transform .3s;
 }
 
-.animation:hover{
-    transform: scale(1.02);
+.animation:hover, .skill-icon:hover{
+    transform: scale(1.08);
     cursor: pointer;
 }
 
 .right-section, .left-section{
     display: flex;
-    flex-direction: column;
     justify-content: center;
     align-items: center;
     padding-bottom:24px;
@@ -51,7 +50,7 @@ body{
 
 .skill-icon{
     width: 70px;
-    margin-left: 8px;
+    margin-left: 12px;
     cursor: pointer;
 }
 
@@ -59,4 +58,8 @@ body{
     background-color: #64ae33;
     border: black;
     border-radius: 18px 0;
+}
+
+#skill-text{
+    max-width: 665px;
 }
