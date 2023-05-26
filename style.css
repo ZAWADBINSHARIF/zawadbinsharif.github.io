@@ -16,8 +16,18 @@ body{
     background-color: var(--web-sky);
 }
 
+.section-heading>h1{
+    width: 145px;
+    background-color: black;
+    color: white;
+    text-align: center;
+    border: black;
+    border-radius: 20px 0;
+    cursor:grab
+}
+
 .animation{
-    transition: transform .5s;
+    transition: transform .3s;
 }
 
 .animation:hover{
@@ -30,11 +40,23 @@ body{
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    padding: 24px 0;
+    padding-bottom:24px;
     text-align: center;
 }
 
 #profile-img>img{
     width: 320px;
     box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+}
+
+.skill-icon{
+    width: 70px;
+    margin-left: 8px;
+    cursor: pointer;
+}
+
+#qt-framework-icon{
+    background-color: #64ae33;
+    border: black;
+    border-radius: 18px 0;
 }

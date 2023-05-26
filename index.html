@@ -4,11 +4,16 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
+    <link rel="icon" type="image/x-icon" href="/images/icons/favicon.ico" />
     <!-- // bootstrap css -->
     <link rel="stylesheet" href="./Bootstrap/bootstrap.min.css" />
     <!-- // bootstrap javascript  -->
-    <script src="./Bootstrap/bootstrap.bundle.min.js"></script>
+    <script defer src="./Bootstrap/bootstrap.bundle.min.js"></script>
+
+    <!-- // font awesome css  -->
+    <link rel="stylesheet" href="./Font-awesome/all.min.css" />
+    <!-- // font awesome javascript -->
+    <script defer src="./Font-awesome/all.min.js"></script>
 
     <!-- // stylesheet -->
     <link rel="stylesheet" href="style.css" />
@@ -35,7 +40,7 @@
             class="collapse navbar-collapse justify-content-center"
             id="navbarSupportedContent"
           >
-            <ul class="navbar-nav mb-2 mb-lg-0">
+            <ul class="navbar-nav mb-2 mb-lg-0" ;>
               <li class="nav-item">
                 <a class="nav-link active" aria-current="page" href="#">Home</a>
               </li>
@@ -57,9 +62,9 @@
       </nav>
       <!-- ============= Navbar End ==============  -->
 
-      <!-- ===================== Cover Section Start ===================== -->
-      <section class="container  py-lg-5">
-        <div class="d-flex py-lg-5 flex-column flex-lg-row md" id="first-section">
+      <section class="container py-lg-5">
+        <!-- ===================== home Section Start ===================== -->
+        <section class="d-flex py-5 flex-column flex-lg-row" id="home-section">
           <div class="left-section flex-fill">
             <div id="profile-img" class="justify-content-center animation">
               <img
@@ -75,9 +80,79 @@
             <h2>Typescript | C++</h2>
             <h3>🎯💪🍪⚡</h3>
           </div>
-        </div>
+        </section>
+        <!-- ===================== home Section Start =====================  -->
+
+        <!-- ================== Skill Section Start =================== -->
+        <section id="skill-section" class="py-5">
+          <div class="section-heading d-flex justify-content-center">
+            <h1>SKILL</h1>
+          </div>
+          <div class="d-flex flex-column py-4 text-center">
+            <div
+              class="left-section flex-fill flex-lg-row flex-wrap flex-column"
+            >
+              <img
+                src="./images/icons/typescript-144.png"
+                alt="typescript"
+                class="img-fluid skill-icon"
+              />
+              <img
+                src="./images/icons/javascript-96.png"
+                alt="Javascript"
+                class="img-fluid skill-icon"
+              />
+              <img
+                src="./images/icons/nodejs-96.png"
+                alt="Node JS"
+                class="skill-icon img-fluid"
+              />
+              <img
+                src="./images/icons/react-100.png"
+                alt="React JS"
+                class="skill-icon img-fluid"
+              />
+              <img
+                src="./images/icons/mongodb-96.png"
+                alt="MongoDB"
+                class="skill-icon img-fluid"
+              />
+              <img
+                src="https://www.electronjs.org/assets/img/logo.svg"
+                alt="Electron JS"
+                class="skill-icon img-fluid"
+              />
+              <img
+                src="./images/icons/qt-100.png"
+                alt="QT Framework"
+                id="qt-framework-icon"
+                class="skill-icon img-fluid"
+              />
+              <img
+                src="./images/icons/cpp-96.png"
+                alt="C++"
+                class="skill-icon img-fluid"
+              />
+            </div>
+            <div class="right-section flex-fill">
+              Lorem ipsum dolor sit amet consectetur adipisicing elit. Accusamus
+              quisquam dolores perspiciatis voluptate. Laboriosam inventore eos
+              natus porro explicabo accusamus reiciendis, labore pariatur fugiat
+              excepturi velit perspiciatis? Ipsam tempore optio numquam ducimus
+              minima cupiditate nulla architecto, laboriosam reprehenderit. Est
+              placeat aspernatur, tenetur et sequi error obcaecati debitis. Nemo
+              natus ullam dolores minus quaerat eligendi, odio repellendus ex
+              explicabo doloremque quo quisquam similique aspernatur rem illum
+              facere accusantium voluptatibus sint ipsa deserunt aliquam animi
+              corporis sapiente? Dicta voluptas consequuntur perferendis
+              pariatur et quo impedit quos doloribus ipsum, numquam nihil odio?
+              Hic vero quae deserunt iste ipsum modi provident atque veritatis
+              perspiciatis.
+            </div>
+          </div>
+        </section>
+        <!-- ================== Skill Section Start =================== -->
       </section>
-      <!-- ===================== Cover Section Start =====================  -->
     </section>
   </body>
 </html>
