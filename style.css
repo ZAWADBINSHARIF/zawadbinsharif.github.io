@@ -54,12 +54,6 @@ body{
     cursor: pointer;
 }
 
-#qt-framework-icon{
-    background-color: #64ae33;
-    border: black;
-    border-radius: 18px 0;
-}
-
 #skill-text{
     max-width: 665px;
 }
