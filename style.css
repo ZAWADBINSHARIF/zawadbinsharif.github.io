@@ -17,7 +17,7 @@ body{
 }
 
 .section-heading>h1{
-    width: 145px;
+    padding: 0 6px;
     background-color: black;
     color: white;
     text-align: center;
@@ -56,4 +56,13 @@ body{
 
 #skill-text{
     max-width: 665px;
+}
+
+.project-card-view{
+        box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+        cursor: pointer;
+}
+
+.project-card-view:hover{
+    box-shadow: rgba(0, 0, 0, 0.19) 0px 10px 20px, rgba(0, 0, 0, 0.23) 0px 6px 6px;
 }
