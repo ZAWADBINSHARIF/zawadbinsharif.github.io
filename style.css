@@ -16,6 +16,11 @@ body {
   background-color: var(--web-sky);
 }
 
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
 .section-heading > h1 {
   padding: 0 6px;
   background-color: black;
@@ -83,4 +88,8 @@ body {
   cursor: pointer;
   max-width: 720px;
   /* border-radius: 20px 0; */
+}
+
+.contact-icon {
+  width: 48px;
 }
