@@ -1,68 +1,86 @@
 /* // Google Font Link  */
 @import url('https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@100;200;300;400;500;600;700;800;900&display=swap');
 
-:root{
-    --web-sky: #ffff;  /*website background-color */
+:root {
+  --web-sky: #ffff; /*website background-color */
 }
 
-*{
-    padding: 0;
-    margin: 0;
-    font-family: 'Roboto Slab', serif;
-    font-size: 1.01rem;
+* {
+  padding: 0;
+  margin: 0;
+  font-family: 'Roboto Slab', serif;
+  font-size: 1.01rem;
 }
 
-body{
-    background-color: var(--web-sky);
+body {
+  background-color: var(--web-sky);
 }
 
-.section-heading>h1{
-    padding: 0 6px;
-    background-color: black;
-    color: white;
-    text-align: center;
-    border: black;
-    border-radius: 20px 0;
-    cursor:grab
+.section-heading > h1 {
+  padding: 0 6px;
+  background-color: black;
+  color: white;
+  text-align: center;
+  border: black;
+  border-radius: 20px 0;
+  cursor: grab;
 }
 
-.animation, .skill-icon{
-    transition: transform .3s;
+.animation,
+.skill-icon {
+  transition: transform 0.3s;
 }
 
-.animation:hover, .skill-icon:hover{
-    transform: scale(1.08);
-    cursor: pointer;
+.animation:hover,
+.skill-icon:hover {
+  transform: scale(1.08);
+  cursor: pointer;
 }
 
-.right-section, .left-section{
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding-bottom:24px;
-    text-align: center;
+.right-section,
+.left-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-bottom: 24px;
+  text-align: center;
 }
 
-#profile-img>img{
-    width: 320px;
-    box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+#profile-img > img {
+  width: 320px;
+  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
 }
 
-.skill-icon{
-    width: 70px;
-    margin-left: 12px;
-    cursor: pointer;
+.skill-icon-wraper {
+  height: 100px;
 }
 
-#skill-text{
-    max-width: 665px;
+.skill-icon {
+  width: 70px;
+  margin-left: 12px;
+  cursor: pointer;
 }
 
-.project-card-view{
-        box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
-        cursor: pointer;
+.skill-wrapper {
+  max-width: 720px;
 }
 
-.project-card-view:hover{
-    box-shadow: rgba(0, 0, 0, 0.19) 0px 10px 20px, rgba(0, 0, 0, 0.23) 0px 6px 6px;
+#skill-text {
+  max-width: 665px;
+}
+
+.project-card-view {
+  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+  cursor: pointer;
+}
+
+.project-card-view:hover {
+  box-shadow: rgba(0, 0, 0, 0.19) 0px 10px 20px, rgba(0, 0, 0, 0.23) 0px 6px 6px;
+}
+
+.education-card {
+  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+  cursor: pointer;
+  max-width: 720px;
+  /* border-radius: 20px 0; */
 }
