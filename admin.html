@@ -1,0 +1,1695 @@
+<!doctype html>
+<html lang="en" x-data="adminPanel()">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Portfolio Admin — Zawad Bin Sharif</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
+    ></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <style>
+      [x-cloak] {
+        display: none !important;
+      }
+      body {
+        background: #f8fafc;
+        font-family:
+          'Inter',
+          system-ui,
+          -apple-system,
+          sans-serif;
+      }
+      .admin-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+      }
+      .btn {
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.875rem;
+        transition: all 0.2s;
+        cursor: pointer;
+      }
+      .btn-primary {
+        background: #6366f1;
+        color: white;
+        border: none;
+      }
+      .btn-primary:hover {
+        background: #4f46e5;
+      }
+      .btn-danger {
+        background: #ef4444;
+        color: white;
+        border: none;
+      }
+      .btn-danger:hover {
+        background: #dc2626;
+      }
+      .btn-outline {
+        background: white;
+        border: 1px solid #e2e8f0;
+        color: #334155;
+      }
+      .btn-outline:hover {
+        background: #f1f5f9;
+      }
+      .input {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 0.875rem;
+      }
+      .input:focus {
+        outline: none;
+        border-color: #6366f1;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+      }
+      textarea.input {
+        resize: vertical;
+      }
+      .tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        background: #f1f5f9;
+        padding: 2px 10px;
+        border-radius: 999px;
+        font-size: 0.75rem;
+      }
+      .toast {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 9999;
+        padding: 12px 20px;
+        border-radius: 12px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+      }
+      .toast-success {
+        background: #ecfdf5;
+        color: #065f46;
+        border: 1px solid #a7f3d0;
+      }
+      .toast-error {
+        background: #fef2f2;
+        color: #991b1b;
+        border: 1px solid #fecaca;
+      }
+    </style>
+  </head>
+  <body class="min-h-screen">
+    <!-- ==================== LOGIN SCREEN ==================== -->
+    <div
+      x-show="!authenticated"
+      x-cloak
+      class="flex items-center justify-center min-h-screen px-4 bg-gradient-to-br from-slate-50 to-indigo-50"
+    >
+      <div class="admin-card p-8 w-full max-w-md">
+        <div class="text-center mb-6">
+          <div
+            class="w-12 h-12 bg-indigo-600 text-white rounded-xl flex items-center justify-center text-lg font-bold mx-auto mb-3"
+          >
+            ZS
+          </div>
+          <h1 class="text-2xl font-bold text-slate-800">Admin Login</h1>
+          <p class="text-sm text-slate-500 mt-1">
+            Sign in to manage your portfolio
+          </p>
+        </div>
+        <form @submit.prevent="login" class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1"
+              >Email</label
+            >
+            <input
+              type="email"
+              x-model="email"
+              required
+              class="input"
+              placeholder="admin@zawadbinsharif.dev"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1"
+              >Password</label
+            >
+            <input
+              type="password"
+              x-model="password"
+              required
+              class="input"
+              placeholder="••••••••"
+            />
+          </div>
+          <div
+            x-show="error"
+            x-text="error"
+            class="text-red-500 text-sm bg-red-50 rounded-lg p-3 border border-red-200"
+          ></div>
+          <button
+            type="submit"
+            class="btn btn-primary w-full py-3"
+            :disabled="loading"
+          >
+            <span x-show="!loading">Sign In</span>
+            <span
+              x-show="loading"
+              class="inline-flex items-center gap-2 justify-center"
+            >
+              <svg class="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                <circle
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  stroke-width="4"
+                  stroke-dasharray="20"
+                  stroke-dashoffset="5"
+                />
+              </svg>
+              Signing in...
+            </span>
+          </button>
+        </form>
+        <p class="text-xs text-slate-400 text-center mt-6">
+          Create admin user in Supabase Dashboard → Authentication → Users
+        </p>
+      </div>
+    </div>
+
+    <!-- ==================== ADMIN DASHBOARD ==================== -->
+    <div x-show="authenticated" x-cloak class="min-h-screen">
+      <!-- Navbar -->
+      <nav
+        class="bg-white shadow-sm border-b border-slate-200 px-4 sm:px-6 py-3 flex items-center justify-between sticky top-0 z-40"
+      >
+        <div class="flex items-center gap-3">
+          <div
+            class="w-8 h-8 bg-indigo-600 text-white rounded-lg flex items-center justify-center text-sm font-bold"
+          >
+            ZS
+          </div>
+          <span class="font-semibold text-slate-800">Admin Panel</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <span
+            class="text-sm text-slate-500 hidden sm:block"
+            x-text="session?.user?.email || 'Admin'"
+          ></span>
+          <button @click="logout" class="btn btn-outline text-sm">
+            Logout
+          </button>
+        </div>
+      </nav>
+
+      <!-- Tabs -->
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 py-6">
+        <div class="flex gap-2 mb-6 overflow-x-auto pb-2">
+          <template
+            x-for="tab in ['Projects', 'Skills', 'Experience', 'Testimonials', 'Settings']"
+            :key="tab"
+          >
+            <button
+              @click="activeTab = tab"
+              :class="activeTab === tab ? 'btn btn-primary' : 'btn btn-outline'"
+              class="text-sm whitespace-nowrap"
+              x-text="tab"
+            ></button>
+          </template>
+        </div>
+
+        <!-- ==================== PROJECTS TAB ==================== -->
+        <div x-show="activeTab === 'Projects'" x-transition>
+          <div class="flex justify-between items-center mb-4">
+            <h2
+              class="text-xl font-bold text-slate-800"
+              x-text="`Projects ${projects?.length > 0? projects?.length: ''}`"
+            ></h2>
+            <button @click="editProject(null)" class="btn btn-primary">
+              + Add Project
+            </button>
+          </div>
+          <div class="space-y-3">
+            <template x-for="p in projects" :key="p.id">
+              <div
+                class="admin-card p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+              >
+                <div class="flex items-center gap-3">
+                  <!-- Project image (or fallback icon) -->
+                  <div
+                    class="w-10 h-10 rounded-lg overflow-hidden bg-slate-100 flex items-center justify-center flex-shrink-0 border border-slate-200"
+                  >
+                    <img
+                      x-show="p.project_image_url"
+                      :src="p.project_image_url"
+                      class="w-full h-full object-cover"
+                      onerror="
+                        this.style.display = 'none';
+                        this.nextElementSibling?.style.removeProperty(
+                          'display',
+                        );
+                      "
+                    />
+                  </div>
+                  <div>
+                    <div
+                      class="font-semibold text-slate-800"
+                      x-text="p.title"
+                    ></div>
+                    <div
+                      class="text-sm text-slate-500"
+                      x-text="(p.category || '') + ' · ' + (p.year || '')"
+                    ></div>
+                  </div>
+                  <span
+                    x-show="p.featured"
+                    class="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full font-medium"
+                    >Featured</span
+                  >
+                </div>
+                <div class="flex gap-2">
+                  <button
+                    @click="editProject(p)"
+                    class="btn btn-outline text-xs"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    @click="deleteProject(p.id)"
+                    class="btn btn-danger text-xs"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            </template>
+            <div
+              x-show="projects.length === 0"
+              class="text-center py-12 text-slate-400 bg-white rounded-xl border border-dashed border-slate-200"
+            >
+              No projects yet. Click "Add Project" to create one.
+            </div>
+          </div>
+        </div>
+
+        <!-- ==================== SKILLS TAB ==================== -->
+        <div x-show="activeTab === 'Skills'" x-transition>
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-bold text-slate-800">Skill Categories</h2>
+            <button @click="editSkillCategory(null)" class="btn btn-primary">
+              + Add Category
+            </button>
+          </div>
+          <div class="grid sm:grid-cols-2 gap-4">
+            <template x-for="cat in skillCategories" :key="cat.id">
+              <div class="admin-card p-4">
+                <div class="flex justify-between items-start mb-3">
+                  <div class="flex items-center gap-2">
+                    <span class="text-xl" x-text="cat.icon || '🛠️'"></span>
+                    <span
+                      class="font-semibold text-slate-800"
+                      x-text="cat.name"
+                    ></span>
+                  </div>
+                  <div class="flex gap-1">
+                    <button
+                      @click="editSkillCategory(cat)"
+                      class="text-xs text-indigo-500 hover:text-indigo-700 font-medium"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      @click="deleteSkillCategory(cat.id)"
+                      class="text-xs text-red-500 hover:text-red-700 font-medium ml-2"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                  <template x-for="skill in cat.skills" :key="skill.id">
+                    <span class="tag">
+                      <span x-text="skill.name"></span>
+                      <button
+                        @click="deleteSkill(skill.id)"
+                        class="text-red-400 hover:text-red-600 ml-1"
+                      >
+                        &times;
+                      </button>
+                    </span>
+                  </template>
+                  <button
+                    @click="addSkillToCategory(cat)"
+                    class="text-xs text-indigo-500 hover:text-indigo-700 font-medium border border-dashed border-indigo-300 rounded-full px-3 py-1"
+                  >
+                    + Skill
+                  </button>
+                </div>
+              </div>
+            </template>
+          </div>
+        </div>
+
+        <!-- ==================== EXPERIENCE TAB ==================== -->
+        <div x-show="activeTab === 'Experience'" x-transition>
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-bold text-slate-800">Timeline</h2>
+            <button @click="editTimelineItem(null)" class="btn btn-primary">
+              + Add Experience
+            </button>
+          </div>
+          <div class="space-y-3">
+            <template x-for="item in timeline" :key="item.id">
+              <div
+                class="admin-card p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+              >
+                <div>
+                  <div
+                    class="font-semibold text-slate-800"
+                    x-text="item.role + ' @ ' + item.company"
+                  ></div>
+                  <div
+                    class="text-sm text-slate-500"
+                    x-text="item.period"
+                  ></div>
+                  <p
+                    class="text-sm text-slate-600 mt-1 line-clamp-2"
+                    x-text="item.description"
+                  ></p>
+                </div>
+                <div class="flex gap-2 flex-shrink-0">
+                  <button
+                    @click="editTimelineItem(item)"
+                    class="btn btn-outline text-xs"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    @click="deleteTimelineItem(item.id)"
+                    class="btn btn-danger text-xs"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            </template>
+          </div>
+        </div>
+
+        <!-- ==================== TESTIMONIALS TAB ==================== -->
+        <div x-show="activeTab === 'Testimonials'" x-transition>
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-bold text-slate-800">Testimonials</h2>
+            <button @click="editTestimonial(null)" class="btn btn-primary">
+              + Add Testimonial
+            </button>
+          </div>
+          <div class="space-y-3">
+            <template x-for="t in testimonials" :key="t.id">
+              <div
+                class="admin-card p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+              >
+                <div>
+                  <div class="flex items-center gap-2 mb-1">
+                    <div
+                      class="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold"
+                      :style="'background:' + (t.color || '#6366f1')"
+                      x-text="t.initials || '??'"
+                    ></div>
+                    <span
+                      class="font-semibold text-slate-800"
+                      x-text="t.name"
+                    ></span>
+                  </div>
+                  <div class="text-sm text-slate-500" x-text="t.title"></div>
+                  <p
+                    class="text-sm text-slate-600 italic mt-1"
+                    x-text="'“' + t.quote + '”'"
+                  ></p>
+                </div>
+                <div class="flex gap-2 flex-shrink-0">
+                  <button
+                    @click="editTestimonial(t)"
+                    class="btn btn-outline text-xs"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    @click="deleteTestimonial(t.id)"
+                    class="btn btn-danger text-xs"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            </template>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== SETTINGS TAB ==================== -->
+      <div
+        class="flex justify-center"
+        x-show="activeTab === 'Settings'"
+        x-transition
+      >
+        <div class="mx-auto">
+          <h2 class="text-xl font-bold mb-4">Site Settings</h2>
+          <form @submit.prevent="saveSettings" class="space-y-6 max-w-2xl">
+            <!-- Hero fields -->
+            <fieldset class="admin-card p-4">
+              <legend class="font-semibold mb-2">Hero Section</legend>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="text-sm">Title Line 1</label
+                  ><input
+                    x-model="settingsForm.hero_title_line1"
+                    class="input"
+                  />
+                </div>
+                <div>
+                  <label class="text-sm">Title Line 2</label
+                  ><input
+                    x-model="settingsForm.hero_title_line2"
+                    class="input"
+                  />
+                </div>
+                <div>
+                  <label class="text-sm">Title Line 3</label
+                  ><input
+                    x-model="settingsForm.hero_title_line3"
+                    class="input"
+                  />
+                </div>
+                <div class="sm:col-span-2">
+                  <label class="text-sm">Typing Roles (comma separated)</label>
+                  <input
+                    x-model="heroRolesString"
+                    @input="settingsForm.hero_roles = JSON.stringify(heroRolesString.split(',').map(s=>s.trim()))"
+                    class="input"
+                  />
+                </div>
+                <div>
+                  <label class="text-sm">Years</label
+                  ><input x-model="settingsForm.hero_years" class="input" />
+                </div>
+                <div>
+                  <label class="text-sm">Projects</label
+                  ><input x-model="settingsForm.hero_projects" class="input" />
+                </div>
+                <div>
+                  <label class="text-sm">Clients</label
+                  ><input x-model="settingsForm.hero_clients" class="input" />
+                </div>
+                <div class="sm:col-span-2">
+                  <label class="text-sm">Description</label
+                  ><textarea
+                    x-model="settingsForm.hero_description"
+                    class="input"
+                    rows="3"
+                  ></textarea>
+                </div>
+              </div>
+            </fieldset>
+
+            <!-- About fields -->
+            <fieldset class="admin-card p-4">
+              <legend class="font-semibold mb-2">About Section</legend>
+              <div>
+                <label class="text-sm">Bio Paragraph 1</label
+                ><textarea
+                  x-model="settingsForm.about_bio_paragraph1"
+                  class="input"
+                  rows="3"
+                ></textarea>
+              </div>
+              <div class="mt-3">
+                <label class="text-sm">Bio Paragraph 2</label
+                ><textarea
+                  x-model="settingsForm.about_bio_paragraph2"
+                  class="input"
+                  rows="3"
+                ></textarea>
+              </div>
+              <div class="mt-3">
+                <label class="text-sm">Highlights (comma separated)</label>
+                <input
+                  x-model="aboutHighlightsString"
+                  @input="settingsForm.about_highlights = JSON.stringify(aboutHighlightsString.split(',').map(s=>s.trim()))"
+                  class="input"
+                />
+              </div>
+              <div class="mt-4">
+                <label class="text-sm font-medium text-slate-700 mb-2 block"
+                  >Profile Image</label
+                >
+
+                <!-- Preview & upload area -->
+                <div class="flex items-center gap-5">
+                  <!-- Image preview -->
+                  <div
+                    class="w-24 h-24 rounded-xl overflow-hidden border border-slate-200 bg-slate-50 flex items-center justify-center flex-shrink-0"
+                  >
+                    <img
+                      x-show="settingsForm.about_image_url"
+                      :src="settingsForm.about_image_url"
+                      class="w-full h-full object-cover"
+                    />
+                    <svg
+                      x-show="!settingsForm.about_image_url"
+                      class="w-8 h-8 text-slate-300"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="1.5"
+                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      />
+                    </svg>
+                  </div>
+
+                  <!-- Upload button -->
+                  <div class="flex-1">
+                    <label
+                      class="flex items-center gap-2 px-4 py-3 bg-white border-2 border-dashed border-slate-300 rounded-xl cursor-pointer hover:border-indigo-400 hover:bg-indigo-50/30 transition-all group"
+                    >
+                      <svg
+                        class="w-5 h-5 text-slate-400 group-hover:text-indigo-500"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="1.8"
+                          d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                        />
+                      </svg>
+                      <span
+                        class="text-sm font-medium text-slate-600 group-hover:text-indigo-600"
+                        >Choose a photo</span
+                      >
+                      <input
+                        type="file"
+                        @change="uploadProfileImage($event)"
+                        accept="image/*"
+                        class="hidden"
+                      />
+                    </label>
+                    <p class="text-xs text-slate-400 mt-1.5">
+                      JPG, PNG or WebP. Max 2MB.
+                    </p>
+                  </div>
+                </div>
+
+                <!-- Upload progress -->
+                <div
+                  x-show="uploading"
+                  class="mt-3 flex items-center gap-2 text-sm text-indigo-600"
+                >
+                  <svg
+                    class="animate-spin h-4 w-4"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                  >
+                    <circle
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      stroke-width="4"
+                      stroke-dasharray="20"
+                      stroke-dashoffset="5"
+                    />
+                  </svg>
+                  Uploading image…
+                </div>
+
+                <!-- Manual URL fallback (if you still want it) -->
+                <div class="mt-3">
+                  <label class="text-xs text-slate-500 mb-1 block"
+                    >Or paste a direct URL</label
+                  >
+                  <input
+                    type="text"
+                    x-model="settingsForm.about_image_url"
+                    class="input"
+                    placeholder="https://…"
+                  />
+                </div>
+              </div>
+            </fieldset>
+
+            <!-- Contact fields -->
+            <fieldset class="admin-card p-4">
+              <legend class="font-semibold mb-2">Contact Info</legend>
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="text-sm">Email</label
+                  ><input x-model="settingsForm.contact_email" class="input" />
+                </div>
+                <div>
+                  <label class="text-sm">GitHub</label
+                  ><input x-model="settingsForm.contact_github" class="input" />
+                </div>
+                <div>
+                  <label class="text-sm">LinkedIn</label
+                  ><input
+                    x-model="settingsForm.contact_linkedin"
+                    class="input"
+                  />
+                </div>
+                <div>
+                  <label class="text-sm">Twitter</label
+                  ><input
+                    x-model="settingsForm.contact_twitter"
+                    class="input"
+                  />
+                </div>
+                <div>
+                  <label class="text-sm">Intro YouTube ID</label
+                  ><input x-model="settingsForm.intro_video_id" class="input" />
+                </div>
+              </div>
+            </fieldset>
+
+            <button type="submit" class="btn btn-primary">Save Settings</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== EDIT MODAL ==================== -->
+    <div
+      x-show="modalOpen"
+      x-cloak
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+      @click.self="modalOpen = false"
+    >
+      <div
+        class="bg-white rounded-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl"
+      >
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-bold text-slate-800" x-text="modalTitle"></h3>
+          <button
+            @click="modalOpen = false"
+            class="w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-colors"
+          >
+            ✕
+          </button>
+        </div>
+
+        <!-- Project Form -->
+        <template x-if="modalType === 'project'">
+          <form @submit.prevent="saveProject" class="space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="sm:col-span-2">
+                <label class="block text-sm font-medium text-slate-700 mb-1"
+                  >Title *</label
+                >
+                <input
+                  type="text"
+                  x-model="form.title"
+                  required
+                  class="input"
+                />
+              </div>
+              <div class="sm:col-span-2">
+                <label class="block text-sm font-medium text-slate-700 mb-1"
+                  >Short Description</label
+                >
+                <input type="text" x-model="form.short" class="input" />
+              </div>
+              <div class="sm:col-span-2">
+                <label class="block text-sm font-medium text-slate-700 mb-1"
+                  >Full Description</label
+                >
+                <textarea
+                  x-model="form.description"
+                  class="input"
+                  rows="3"
+                ></textarea>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1"
+                  >Category</label
+                >
+                <input
+                  type="text"
+                  x-model="form.category"
+                  class="input"
+                  placeholder="Web App, Mobile, SaaS..."
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1"
+                  >Type</label
+                >
+                <input
+                  type="text"
+                  x-model="form.type"
+                  class="input"
+                  placeholder="Web App, Mobile App..."
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1"
+                  >Year</label
+                >
+                <input
+                  type="text"
+                  x-model="form.year"
+                  class="input"
+                  placeholder="2024"
+                />
+              </div>
+
+              <!-- ============= -->
+              <div class="mt-4">
+                <label class="text-sm font-medium text-slate-700 mb-2 block"
+                  >Project Image</label
+                >
+
+                <!-- Preview & upload area -->
+                <div class="flex items-center gap-5">
+                  <!-- Image preview -->
+                  <div
+                    class="w-24 h-24 rounded-xl overflow-hidden border border-slate-200 bg-slate-50 flex items-center justify-center flex-shrink-0"
+                  >
+                    <img
+                      x-show="form.project_image_url"
+                      :src="form.project_image_url"
+                      class="w-full h-full object-cover"
+                    />
+                    <svg
+                      x-show="!form.project_image_url"
+                      class="w-8 h-8 text-slate-300"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="1.5"
+                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      />
+                    </svg>
+                  </div>
+
+                  <!-- Upload button -->
+                  <div class="flex-1">
+                    <label
+                      class="flex items-center gap-2 px-4 py-3 bg-white border-2 border-dashed border-slate-300 rounded-xl cursor-pointer hover:border-indigo-400 hover:bg-indigo-50/30 transition-all group"
+                    >
+                      <svg
+                        class="w-5 h-5 text-slate-400 group-hover:text-indigo-500"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="1.8"
+                          d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                        />
+                      </svg>
+                      <span
+                        class="text-sm font-medium text-slate-600 group-hover:text-indigo-600"
+                        >Choose a photo</span
+                      >
+                      <input
+                        type="file"
+                        @change="uploadProjectImage($event)"
+                        accept="image/*"
+                        class="hidden"
+                      />
+                    </label>
+                    <p class="text-xs text-slate-400 mt-1.5">
+                      JPG, PNG or WebP. Max 2MB.
+                    </p>
+                  </div>
+                </div>
+
+                <!-- Upload progress -->
+
+                <!-- Manual URL fallback (if you still want it) -->
+                <div class="mt-3">
+                  <label class="text-xs text-slate-500 mb-1 block"
+                    >Or paste a direct URL</label
+                  >
+                  <input
+                    type="text"
+                    x-model="form.project_image_url"
+                    class="input"
+                    placeholder="https://…"
+                  />
+                </div>
+              </div>
+              <!-- ======== -->
+
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1"
+                  >Preview Label</label
+                >
+                <input type="text" x-model="form.preview_label" class="input" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1"
+                  >BG Color (from)</label
+                >
+                <input
+                  type="text"
+                  x-model="form.bg_from"
+                  class="input"
+                  placeholder="#0f2027"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1"
+                  >BG Color (to)</label
+                >
+                <input
+                  type="text"
+                  x-model="form.bg_to"
+                  class="input"
+                  placeholder="#00D4FF"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1"
+                  >Live URL</label
+                >
+                <input
+                  type="url"
+                  x-model="form.live_url"
+                  class="input"
+                  placeholder="https://..."
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1"
+                  >GitHub URL</label
+                >
+                <input
+                  type="url"
+                  x-model="form.github_url"
+                  class="input"
+                  placeholder="https://..."
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1"
+                  >YouTube ID</label
+                >
+                <input
+                  type="text"
+                  x-model="form.youtube_id"
+                  class="input"
+                  placeholder="dQw4w9WgXcQ"
+                />
+              </div>
+              <div class="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  x-model="form.featured"
+                  id="featured"
+                  class="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                />
+                <label for="featured" class="text-sm font-medium text-slate-700"
+                  >Featured</label
+                >
+              </div>
+              <div class="sm:col-span-2">
+                <label class="block text-sm font-medium text-slate-700 mb-1">
+                  Tech Stack (comma‑separated)
+                </label>
+                <input
+                  type="text"
+                  x-model="techString"
+                  @input="form.tech = techString.split(',').map(s => s.trim()).filter(Boolean)"
+                  class="input"
+                  placeholder="React, Node.js, PostgreSQL"
+                />
+              </div>
+              <div class="sm:col-span-2">
+                <label class="block text-sm font-medium text-slate-700 mb-1">
+                  Highlights (comma‑separated)
+                </label>
+                <input
+                  type="text"
+                  x-model="highlightsString"
+                  @input="form.highlights = highlightsString.split(',').map(s => s.trim()).filter(Boolean)"
+                  class="input"
+                  placeholder="Real-time sync, AI-powered, 4.8★ rating"
+                />
+              </div>
+            </div>
+            <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
+              <button
+                type="button"
+                @click="modalOpen = false"
+                class="btn btn-outline"
+              >
+                Cancel
+              </button>
+              <button type="submit" class="btn btn-primary" :disabled="saving">
+                <span x-show="!saving">Save Project</span>
+                <span x-show="saving">Saving...</span>
+              </button>
+            </div>
+          </form>
+        </template>
+
+        <!-- Skill Category Form -->
+        <template x-if="modalType === 'skillCategory'">
+          <form @submit.prevent="saveSkillCategory" class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1"
+                >Category Name *</label
+              >
+              <input type="text" x-model="form.name" required class="input" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1"
+                >Icon (emoji)</label
+              >
+              <input
+                type="text"
+                x-model="form.icon"
+                class="input"
+                placeholder="🎨"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1"
+                >Background Color</label
+              >
+              <input
+                type="text"
+                x-model="form.bg_color"
+                class="input"
+                placeholder="rgba(96,165,250,0.12)"
+              />
+            </div>
+            <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
+              <button
+                type="button"
+                @click="modalOpen = false"
+                class="btn btn-outline"
+              >
+                Cancel
+              </button>
+              <button type="submit" class="btn btn-primary" :disabled="saving">
+                Save Category
+              </button>
+            </div>
+          </form>
+        </template>
+
+        <!-- Timeline Form -->
+        <template x-if="modalType === 'timeline'">
+          <form @submit.prevent="saveTimelineItem" class="space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1"
+                  >Role *</label
+                >
+                <input type="text" x-model="form.role" required class="input" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1"
+                  >Company *</label
+                >
+                <input
+                  type="text"
+                  x-model="form.company"
+                  required
+                  class="input"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1"
+                  >Period</label
+                >
+                <input
+                  type="text"
+                  x-model="form.period"
+                  class="input"
+                  placeholder="2023 – present"
+                />
+              </div>
+              <div class="sm:col-span-2">
+                <label class="block text-sm font-medium text-slate-700 mb-1"
+                  >Description</label
+                >
+                <textarea
+                  x-model="form.description"
+                  class="input"
+                  rows="3"
+                ></textarea>
+              </div>
+              <div class="sm:col-span-2">
+                <label class="block text-sm font-medium text-slate-700 mb-1">
+                  Tags (comma‑separated)
+                </label>
+                <input
+                  type="text"
+                  x-model="tagsString"
+                  @input="form.tags = tagsString.split(',').map(s => s.trim()).filter(Boolean)"
+                  class="input"
+                  placeholder="React, Node.js, AWS"
+                />
+              </div>
+            </div>
+            <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
+              <button
+                type="button"
+                @click="modalOpen = false"
+                class="btn btn-outline"
+              >
+                Cancel
+              </button>
+              <button type="submit" class="btn btn-primary" :disabled="saving">
+                Save Experience
+              </button>
+            </div>
+          </form>
+        </template>
+
+        <!-- Testimonial Form -->
+        <template x-if="modalType === 'testimonial'">
+          <form @submit.prevent="saveTestimonial" class="space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1"
+                  >Name *</label
+                >
+                <input type="text" x-model="form.name" required class="input" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1"
+                  >Title / Company</label
+                >
+                <input
+                  type="text"
+                  x-model="form.title"
+                  class="input"
+                  placeholder="CTO, Acme Inc."
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1"
+                  >Initials</label
+                >
+                <input
+                  type="text"
+                  x-model="form.initials"
+                  class="input"
+                  placeholder="JD"
+                  maxlength="2"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1"
+                  >Color</label
+                >
+                <input
+                  type="text"
+                  x-model="form.color"
+                  class="input"
+                  placeholder="#6366f1"
+                />
+              </div>
+              <div class="sm:col-span-2">
+                <label class="block text-sm font-medium text-slate-700 mb-1"
+                  >Quote *</label
+                >
+                <textarea
+                  x-model="form.quote"
+                  required
+                  class="input"
+                  rows="3"
+                ></textarea>
+              </div>
+            </div>
+            <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
+              <button
+                type="button"
+                @click="modalOpen = false"
+                class="btn btn-outline"
+              >
+                Cancel
+              </button>
+              <button type="submit" class="btn btn-primary" :disabled="saving">
+                Save Testimonial
+              </button>
+            </div>
+          </form>
+        </template>
+      </div>
+    </div>
+
+    <!-- ==================== TOAST ==================== -->
+    <div
+      x-show="toast.show"
+      x-transition
+      class="toast"
+      :class="toast.type === 'success' ? 'toast-success' : 'toast-error'"
+      x-text="toast.message"
+    ></div>
+
+    <!-- ==================== ALPINE + SUPABASE LOGIC ==================== -->
+    <script>
+      function adminPanel() {
+        // ═══════════════════════════ SUPABASE CONFIG ═══════════════════════════
+        const SUPABASE_URL = 'https://edybdawzissejankeknc.supabase.co';
+        const SUPABASE_ANON_KEY =
+          'sb_publishable_uloNzioXCGu8v1Qb7Qa72g_dImCby_R';
+
+        const { createClient } = window.supabase;
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        return {
+          // ── Auth State ──
+          authenticated: false,
+          session: null,
+          email: '',
+          password: '',
+          loading: false,
+          error: '',
+
+          // ── UI State ──
+          activeTab: 'Projects',
+          modalOpen: false,
+          modalType: '',
+          modalTitle: '',
+          editing: false,
+          saving: false,
+          form: {},
+          techString: '',
+          highlightsString: '',
+          tagsString: '',
+
+          // ── Data ──
+          projects: [],
+          skillCategories: [],
+          timeline: [],
+          testimonials: [],
+          settings: {}, // new data property
+          settingsForm: {},
+          heroRolesString: '',
+          aboutHighlightsString: '',
+
+          // ── Toast ──
+          toast: { show: false, type: 'success', message: '' },
+
+          // ═══════════════════════════ INIT ═══════════════════════════
+          async init() {
+            // Check for existing session
+            const { data, error } = await supabase.auth.getSession();
+            if (data?.session) {
+              this.session = data.session;
+              this.authenticated = true;
+              await this.fetchAll();
+            } else {
+              this.authenticated = false;
+            }
+
+            this.$watch('activeTab', (val) => {
+              if (val === 'Settings') this.loadSettingsForAdmin();
+            });
+
+            // Listen for auth state changes
+            supabase.auth.onAuthStateChange((event, session) => {
+              if (session) {
+                this.session = session;
+                this.authenticated = true;
+                this.fetchAll();
+              } else {
+                this.session = null;
+                this.authenticated = false;
+              }
+            });
+          },
+
+          // ═══════════════════════════ AUTH ═══════════════════════════
+          async login() {
+            this.loading = true;
+            this.error = '';
+            try {
+              const { data, error } = await supabase.auth.signInWithPassword({
+                email: this.email,
+                password: this.password,
+              });
+              if (error) {
+                if (error.message?.includes('Database error')) {
+                  this.error =
+                    'Database error: The user may not exist. Create it in Supabase Dashboard → Authentication → Users → Add User.';
+                } else {
+                  this.error = error.message;
+                }
+              } else if (data?.session) {
+                this.session = data.session;
+                this.authenticated = true;
+                this.email = '';
+                this.password = '';
+                await this.fetchAll();
+              }
+            } catch (err) {
+              this.error =
+                'Connection failed. Check your internet and Supabase URL.';
+            } finally {
+              this.loading = false;
+            }
+          },
+
+          async logout() {
+            await supabase.auth.signOut();
+            this.session = null;
+            this.authenticated = false;
+            this.projects = [];
+            this.skillCategories = [];
+            this.timeline = [];
+            this.testimonials = [];
+          },
+
+          // ═══════════════════════════ DATA FETCHING ═══════════════════════════
+          async fetchAll() {
+            await Promise.all([
+              this.fetchProjects(),
+              this.fetchSkills(),
+              this.fetchTimeline(),
+              this.fetchTestimonials(),
+              this.fetchSettings(),
+            ]);
+          },
+
+          async fetchProjects() {
+            try {
+              const { data } = await supabase
+                .from('projects')
+                .select('*')
+                .order('display_order');
+
+              this.projects = data || [];
+            } catch (error) {
+              console.log(error);
+            }
+          },
+          async fetchSkills() {
+            const { data: cats } = await supabase
+              .from('skill_categories')
+              .select('*')
+              .order('display_order');
+            const { data: skills } = await supabase
+              .from('skills')
+              .select('*')
+              .order('display_order');
+            this.skillCategories = (cats || []).map((c) => ({
+              ...c,
+              skills: (skills || []).filter((s) => s.category_id === c.id),
+            }));
+          },
+          async fetchTimeline() {
+            const { data } = await supabase
+              .from('timeline')
+              .select('*')
+              .order('display_order');
+            this.timeline = data || [];
+          },
+          async fetchTestimonials() {
+            const { data } = await supabase
+              .from('testimonials')
+              .select('*')
+              .order('display_order');
+            this.testimonials = data || [];
+          },
+
+          // ═══════════════════════════ PROJECT CRUD ═══════════════════════════
+          editProject(project) {
+            this.editing = !!project;
+            this.modalType = 'project';
+            this.modalTitle = project ? 'Edit Project' : 'New Project';
+            if (project) {
+              this.form = { ...project };
+              this.techString = (project.tech || []).join(', ');
+              this.highlightsString = (project.highlights || []).join(', ');
+            } else {
+              this.form = {
+                title: '',
+                short: '',
+                description: '',
+                category: '',
+                type: '',
+                year: '',
+                project_image_url: '',
+                preview_label: '',
+                bg_from: '#0f2027',
+                bg_to: '#00D4FF',
+                live_url: '',
+                github_url: '',
+                youtube_id: '',
+                featured: false,
+                tech: [],
+                highlights: [],
+                display_order: this.projects.length,
+              };
+              this.techString = '';
+              this.highlightsString = '';
+            }
+            this.modalOpen = true;
+          },
+
+          async saveProject() {
+            this.saving = true;
+            const payload = { ...this.form };
+            // Ensure arrays are set from strings
+            payload.tech = this.techString
+              .split(',')
+              .map((s) => s.trim())
+              .filter(Boolean);
+            payload.highlights = this.highlightsString
+              .split(',')
+              .map((s) => s.trim())
+              .filter(Boolean);
+
+            try {
+              if (this.editing) {
+                await supabase
+                  .from('projects')
+                  .update(payload)
+                  .eq('id', payload.id);
+                this.showToast('Project updated!', 'success');
+              } else {
+                delete payload.id;
+                await supabase.from('projects').insert([payload]);
+                this.showToast('Project created!', 'success');
+              }
+              this.modalOpen = false;
+              await this.fetchProjects();
+            } catch (err) {
+              this.showToast('Error saving project: ' + err.message, 'error');
+            } finally {
+              this.saving = false;
+            }
+          },
+
+          async deleteProject(id) {
+            if (confirm('Delete this project? This cannot be undone.')) {
+              await supabase.from('projects').delete().eq('id', id);
+              this.showToast('Project deleted', 'success');
+              await this.fetchProjects();
+            }
+          },
+
+          // ═══════════════════════════ SKILLS CRUD ═══════════════════════════
+          editSkillCategory(cat) {
+            this.editing = !!cat;
+            this.modalType = 'skillCategory';
+            this.modalTitle = cat ? 'Edit Category' : 'New Category';
+            this.form = cat
+              ? { ...cat }
+              : { name: '', icon: '🛠️', bg_color: 'rgba(0,153,187,0.1)' };
+            this.modalOpen = true;
+          },
+
+          async saveSkillCategory() {
+            this.saving = true;
+            try {
+              if (this.editing) {
+                await supabase
+                  .from('skill_categories')
+                  .update(this.form)
+                  .eq('id', this.form.id);
+                this.showToast('Category updated!', 'success');
+              } else {
+                await supabase.from('skill_categories').insert([this.form]);
+                this.showToast('Category created!', 'success');
+              }
+              this.modalOpen = false;
+              await this.fetchSkills();
+            } catch (err) {
+              this.showToast('Error: ' + err.message, 'error');
+            } finally {
+              this.saving = false;
+            }
+          },
+
+          async deleteSkillCategory(id) {
+            if (confirm('Delete this category and ALL its skills?')) {
+              await supabase.from('skill_categories').delete().eq('id', id);
+              this.showToast('Category deleted', 'success');
+              await this.fetchSkills();
+            }
+          },
+
+          async addSkillToCategory(cat) {
+            const name = prompt('Enter skill name:');
+            if (name?.trim()) {
+              await supabase.from('skills').insert([
+                {
+                  name: name.trim(),
+                  category_id: cat.id,
+                  display_order: cat.skills.length,
+                },
+              ]);
+              this.showToast('Skill added!', 'success');
+              await this.fetchSkills();
+            }
+          },
+
+          async deleteSkill(id) {
+            await supabase.from('skills').delete().eq('id', id);
+            this.showToast('Skill removed', 'success');
+            await this.fetchSkills();
+          },
+
+          // ═══════════════════════════ TIMELINE CRUD ═══════════════════════════
+          editTimelineItem(item) {
+            this.editing = !!item;
+            this.modalType = 'timeline';
+            this.modalTitle = item ? 'Edit Experience' : 'New Experience';
+            if (item) {
+              this.form = { ...item };
+              this.tagsString = (item.tags || []).join(', ');
+            } else {
+              this.form = {
+                role: '',
+                company: '',
+                period: '',
+                description: '',
+                tags: [],
+                display_order: this.timeline.length,
+              };
+              this.tagsString = '';
+            }
+            this.modalOpen = true;
+          },
+
+          async saveTimelineItem() {
+            this.saving = true;
+            this.form.tags = this.tagsString
+              .split(',')
+              .map((s) => s.trim())
+              .filter(Boolean);
+            try {
+              if (this.editing) {
+                await supabase
+                  .from('timeline')
+                  .update(this.form)
+                  .eq('id', this.form.id);
+                this.showToast('Experience updated!', 'success');
+              } else {
+                delete this.form.id;
+                await supabase.from('timeline').insert([this.form]);
+                this.showToast('Experience added!', 'success');
+              }
+              this.modalOpen = false;
+              await this.fetchTimeline();
+            } catch (err) {
+              this.showToast('Error: ' + err.message, 'error');
+            } finally {
+              this.saving = false;
+            }
+          },
+
+          async deleteTimelineItem(id) {
+            if (confirm('Delete this experience entry?')) {
+              await supabase.from('timeline').delete().eq('id', id);
+              this.showToast('Experience deleted', 'success');
+              await this.fetchTimeline();
+            }
+          },
+
+          // ═══════════════════════════ TESTIMONIALS CRUD ═══════════════════════════
+          editTestimonial(t) {
+            this.editing = !!t;
+            this.modalType = 'testimonial';
+            this.modalTitle = t ? 'Edit Testimonial' : 'New Testimonial';
+            this.form = t
+              ? { ...t }
+              : {
+                  name: '',
+                  title: '',
+                  initials: '',
+                  color: '#6366f1',
+                  quote: '',
+                  display_order: this.testimonials.length,
+                };
+            this.modalOpen = true;
+          },
+
+          async saveTestimonial() {
+            this.saving = true;
+            try {
+              if (this.editing) {
+                await supabase
+                  .from('testimonials')
+                  .update(this.form)
+                  .eq('id', this.form.id);
+                this.showToast('Testimonial updated!', 'success');
+              } else {
+                delete this.form.id;
+                await supabase.from('testimonials').insert([this.form]);
+                this.showToast('Testimonial added!', 'success');
+              }
+              this.modalOpen = false;
+              await this.fetchTestimonials();
+            } catch (err) {
+              this.showToast('Error: ' + err.message, 'error');
+            } finally {
+              this.saving = false;
+            }
+          },
+
+          async uploadProfileImage(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            this.uploading = true;
+            const { data, error } = await supabase.storage
+              .from('images')
+              .upload(
+                `profile-${Date.now()}.${file.name.split('.').pop()}`,
+                file,
+              );
+            if (error) {
+              this.showToast('Upload failed: ' + error.message, 'error');
+            } else {
+              const url = supabase.storage
+                .from('portfolio-images')
+                .getPublicUrl(data.path).data.publicUrl;
+              this.settingsForm.about_image_url = url;
+              this.showToast('Image uploaded!', 'success');
+            }
+            this.uploading = false;
+          },
+
+          async uploadProjectImage(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            this.uploading = true;
+            const { data, error } = await supabase.storage
+              .from('images')
+              .upload(
+                `profile-${Date.now()}.${file.name.split('.').pop()}`,
+                file,
+              );
+            if (error) {
+              this.showToast('Upload failed: ' + error.message, 'error');
+            } else {
+              const url = supabase.storage
+                .from('images')
+                .getPublicUrl(data.path).data.publicUrl;
+              this.form.project_image_url = url;
+              this.showToast('Image uploaded!', 'success');
+            }
+            this.uploading = false;
+          },
+
+          async deleteTestimonial(id) {
+            if (confirm('Delete this testimonial?')) {
+              await supabase.from('testimonials').delete().eq('id', id);
+              this.showToast('Testimonial deleted', 'success');
+              await this.fetchTestimonials();
+            }
+          },
+
+          async fetchSettings() {
+            try {
+              const { data } = await supabase.from('settings').select('*');
+              const map = {};
+              (data || []).forEach((s) => {
+                map[s.key] = s.value;
+              });
+              console.log(data);
+              this.settings = map;
+              this.aboutHighlights = JSON.parse(map.about_highlights || '[]');
+              this.roles = JSON.parse(
+                map.hero_roles || '["Full Stack Developer"]',
+              );
+              this.categories = [
+                'All',
+                ...new Set(
+                  this.projects.map((p) => p.category).filter(Boolean),
+                ),
+              ];
+            } catch (error) {
+              console.log(error);
+            }
+          },
+
+          async loadSettingsForAdmin() {
+            const { data } = await supabase.from('settings').select('*');
+            const map = {};
+            (data || []).forEach((s) => {
+              map[s.key] = s.value;
+            });
+            this.settingsForm = { ...map };
+            const roles = JSON.parse(map.hero_roles || '[]');
+            this.heroRolesString = roles.join(', ');
+            const highlights = JSON.parse(map.about_highlights || '[]');
+            this.aboutHighlightsString = highlights.join(', ');
+          },
+
+          async saveSettings() {
+            this.saving = true;
+            try {
+              const entries = Object.entries(this.settingsForm);
+              for (const [key, value] of entries) {
+                await supabase.from('settings').upsert({ key, value });
+              }
+              this.showToast('Settings saved!', 'success');
+            } catch (err) {
+              this.showToast('Error: ' + err.message, 'error');
+            } finally {
+              this.saving = false;
+            }
+          },
+
+          // ═══════════════════════════ TOAST ═══════════════════════════
+          showToast(message, type = 'success') {
+            this.toast = { show: true, type, message };
+            setTimeout(() => {
+              this.toast.show = false;
+            }, 3500);
+          },
+        };
+      }
+    </script>
+  </body>
+</html>

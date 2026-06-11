@@ -1,0 +1,2031 @@
+<!doctype html>
+<html lang="en" x-data="portfolio()">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Zawad Bin Sharif — Full Stack & Mobile Developer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&family=Inter:wght@300..600&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
+    ></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        font-family: 'Inter', sans-serif;
+        background: #f0f4ff;
+        color: #0a0f1e;
+        overflow-x: hidden;
+      }
+      :root {
+        --navy: #0a0f1e;
+        --cyan: #00d4ff;
+        --cyan2: #0099bb;
+        --bg: #f0f4ff;
+        --card: #ffffff;
+        --border: rgba(10, 15, 30, 0.08);
+      }
+      ::-webkit-scrollbar {
+        width: 5px;
+      }
+      ::-webkit-scrollbar-track {
+        background: var(--bg);
+      }
+      ::-webkit-scrollbar-thumb {
+        background: var(--cyan2);
+        border-radius: 3px;
+      }
+      .gradient-text {
+        background: linear-gradient(
+          135deg,
+          #0a0f1e 0%,
+          #0099bb 60%,
+          #00d4ff 100%
+        );
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+      .nav-glass {
+        background: rgba(240, 244, 255, 0.9);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-bottom: 1px solid var(--border);
+      }
+      .hero-blob {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(80px);
+        pointer-events: none;
+        opacity: 0.3;
+      }
+      .cursor {
+        display: inline-block;
+        width: 2px;
+        height: 1em;
+        background: var(--cyan2);
+        animation: blink 1s step-end infinite;
+        vertical-align: text-bottom;
+        margin-left: 2px;
+      }
+      @keyframes blink {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0;
+        }
+      }
+      .tech-pill {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.7rem;
+        padding: 3px 10px;
+        border-radius: 999px;
+        background: rgba(0, 153, 187, 0.08);
+        color: var(--cyan2);
+        border: 1px solid rgba(0, 153, 187, 0.2);
+        white-space: nowrap;
+      }
+      .skill-card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        transition:
+          transform 0.25s,
+          box-shadow 0.25s;
+      }
+      .skill-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 40px rgba(0, 153, 187, 0.12);
+      }
+      .project-card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        overflow: hidden;
+        transition:
+          transform 0.3s,
+          box-shadow 0.3s;
+        cursor: pointer;
+      }
+      .project-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 20px 60px rgba(0, 153, 187, 0.15);
+      }
+      .preview-wrapper {
+        position: relative;
+        width: 100%;
+        padding-top: 56.25%;
+        overflow: hidden;
+        background: #e8eef8;
+      }
+      .preview-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          180deg,
+          transparent 40%,
+          rgba(255, 255, 255, 0.92) 100%
+        );
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.3s;
+      }
+      .project-card:hover .preview-overlay {
+        opacity: 1;
+      }
+      .lightbox-backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 1000;
+        background: rgba(10, 15, 30, 0.55);
+        backdrop-filter: blur(8px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1.5rem;
+      }
+      .lightbox-panel {
+        background: #fff;
+        border-radius: 24px;
+        overflow: hidden;
+        width: 100%;
+        max-width: 960px;
+        max-height: 92vh;
+        overflow-y: auto;
+        box-shadow: 0 40px 100px rgba(0, 0, 0, 0.18);
+      }
+      .lightbox-preview {
+        position: relative;
+        width: 100%;
+        padding-top: 52%;
+      }
+      .lightbox-preview > * {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+      }
+      .lb-tab {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 0.82rem;
+        font-weight: 600;
+        padding: 8px 18px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition:
+          background 0.2s,
+          color 0.2s;
+      }
+      .lb-tab.active {
+        background: var(--navy);
+        color: #fff;
+      }
+      .lb-tab:not(.active) {
+        color: #64748b;
+      }
+      .lb-tab:not(.active):hover {
+        background: #f1f5f9;
+      }
+      .browser-chrome {
+        background: #e8edf5;
+        padding: 8px 14px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        border-bottom: 1px solid #d4dae8;
+      }
+      .browser-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+      }
+      .browser-url {
+        flex: 1;
+        background: #fff;
+        border-radius: 6px;
+        padding: 3px 10px;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.72rem;
+        color: #5a6a7e;
+        border: 1px solid #cbd5e1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .btn-primary {
+        background: #6366f1;
+        color: #fff;
+        border-radius: 12px;
+        padding: 12px 28px;
+        font-family: 'Space Grotesk', sans-serif;
+        font-weight: 600;
+        font-size: 0.9rem;
+        border: 2px solid transparent;
+        transition:
+          background 0.2s,
+          color 0.2s,
+          border-color 0.2s,
+          transform 0.15s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .btn-primary:hover {
+        background: #fff;
+        color: #6366f1;
+        border-color: #6366f1;
+        transform: translateY(-2px);
+      }
+      .btn-ghost {
+        background: transparent;
+        color: var(--navy);
+        border: 2px solid var(--border);
+        border-radius: 12px;
+        padding: 11px 24px;
+        font-family: 'Space Grotesk', sans-serif;
+        font-weight: 500;
+        font-size: 0.9rem;
+        transition:
+          border-color 0.2s,
+          background 0.2s,
+          transform 0.15s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .btn-ghost:hover {
+        border-color: var(--cyan2);
+        background: rgba(0, 153, 187, 0.05);
+        transform: translateY(-2px);
+      }
+      .btn-cyan {
+        background: linear-gradient(135deg, #00d4ff, #0099bb);
+        color: var(--navy);
+        border-radius: 12px;
+        padding: 12px 28px;
+        font-family: 'Space Grotesk', sans-serif;
+        font-weight: 700;
+        font-size: 0.9rem;
+        border: none;
+        transition:
+          opacity 0.2s,
+          transform 0.15s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .btn-cyan:hover {
+        opacity: 0.88;
+        transform: translateY(-2px);
+      }
+      .section-label {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.72rem;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        color: var(--cyan2);
+      }
+      .timeline-line {
+        width: 2px;
+        background: linear-gradient(180deg, var(--cyan2) 0%, #d0d8f0 100%);
+      }
+      .timeline-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: var(--cyan2);
+        border: 2px solid #fff;
+        box-shadow: 0 0 0 3px rgba(0, 153, 187, 0.2);
+      }
+      .contact-card {
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: 24px;
+        overflow: hidden;
+        position: relative;
+      }
+      .contact-glow {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(70px);
+        pointer-events: none;
+      }
+      .stat-badge {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        text-align: center;
+      }
+      .video-frame-wrap {
+        position: relative;
+        width: 100%;
+        padding-top: 56.25%;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 20px 60px rgba(10, 15, 30, 0.12);
+      }
+      .video-frame-wrap iframe {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        border: 0;
+      }
+      .skeleton {
+        background: linear-gradient(
+          90deg,
+          #e8edf5 25%,
+          #f1f5f9 50%,
+          #e8edf5 75%
+        );
+        background-size: 200% 100%;
+        animation: shimmer 1.5s infinite;
+        border-radius: 8px;
+      }
+      @keyframes shimmer {
+        0% {
+          background-position: -200% 0;
+        }
+        100% {
+          background-position: 200% 0;
+        }
+      }
+      .toast {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        z-index: 9999;
+        padding: 14px 22px;
+        border-radius: 12px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        font-family: 'Space Grotesk', sans-serif;
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+        transition: all 0.3s ease;
+      }
+      .toast-success {
+        background: #ecfdf5;
+        color: #065f46;
+        border: 1px solid #a7f3d0;
+      }
+      .toast-error {
+        background: #fef2f2;
+        color: #991b1b;
+        border: 1px solid #fecaca;
+      }
+
+      [x-cloak] {
+        display: none !important;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- NAV -->
+    <nav
+      class="nav-glass fixed top-0 left-0 right-0 z-50"
+      x-data="{ open:false }"
+    >
+      <div
+        class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between"
+      >
+        <a href="#hero" class="flex items-center gap-2.5">
+          <div
+            class="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold text-white"
+            style="background: linear-gradient(135deg, #0a0f1e, #00d4ff)"
+          >
+            ZS
+          </div>
+          <span
+            class="text-sm font-semibold tracking-tight text-slate-800"
+            style="font-family: 'Space Grotesk', sans-serif"
+            >Zawad Bin Sharif</span
+          >
+        </a>
+        <div class="hidden md:flex items-center gap-7">
+          <a
+            href="#about"
+            class="text-sm text-slate-500 hover:text-slate-900 transition-colors font-medium"
+            style="font-family: 'Space Grotesk', sans-serif"
+            >About</a
+          >
+          <a
+            href="#intro-video"
+            class="text-sm text-slate-500 hover:text-slate-900 transition-colors font-medium"
+            style="font-family: 'Space Grotesk', sans-serif"
+            >Intro</a
+          >
+          <a
+            href="#projects"
+            class="text-sm text-slate-500 hover:text-slate-900 transition-colors font-medium"
+            style="font-family: 'Space Grotesk', sans-serif"
+            >Projects</a
+          >
+          <a
+            href="#skills"
+            class="text-sm text-slate-500 hover:text-slate-900 transition-colors font-medium"
+            style="font-family: 'Space Grotesk', sans-serif"
+            >Skills</a
+          >
+          <a
+            href="#timeline"
+            class="text-sm text-slate-500 hover:text-slate-900 transition-colors font-medium"
+            style="font-family: 'Space Grotesk', sans-serif"
+            >Experience</a
+          >
+          <a
+            href="#contact"
+            class="btn-primary"
+            style="border-radius: 10px; padding: 8px 20px; font-size: 0.85rem"
+            >Hire Me</a
+          >
+        </div>
+        <button class="md:hidden p-2" @click="open=!open" aria-label="Menu">
+          <div
+            class="w-5 h-0.5 bg-slate-700 mb-1.5 transition-all"
+            :class="open&&'rotate-45 translate-y-2'"
+          ></div>
+          <div
+            class="w-5 h-0.5 bg-slate-700 mb-1.5"
+            :class="open&&'opacity-0'"
+          ></div>
+          <div
+            class="w-5 h-0.5 bg-slate-700 transition-all"
+            :class="open&&'-rotate-45 -translate-y-2'"
+          ></div>
+        </button>
+      </div>
+      <div
+        x-show="open"
+        x-cloak
+        x-transition
+        class="md:hidden px-6 pb-5 border-t border-slate-200 mt-1 pt-4 space-y-2"
+      >
+        <a
+          href="#about"
+          @click="open=false"
+          class="block text-sm text-slate-600 py-1 font-medium"
+          >About</a
+        >
+        <a
+          href="#intro-video"
+          @click="open=false"
+          class="block text-sm text-slate-600 py-1 font-medium"
+          >Intro Video</a
+        >
+        <a
+          href="#projects"
+          @click="open=false"
+          class="block text-sm text-slate-600 py-1 font-medium"
+          >Projects</a
+        >
+        <a
+          href="#skills"
+          @click="open=false"
+          class="block text-sm text-slate-600 py-1 font-medium"
+          >Skills</a
+        >
+        <a
+          href="#timeline"
+          @click="open=false"
+          class="block text-sm text-slate-600 py-1 font-medium"
+          >Experience</a
+        >
+        <a
+          href="#contact"
+          @click="open=false"
+          class="block btn-primary mt-2"
+          style="padding: 10px 20px; border-radius: 10px; font-size: 0.85rem"
+          >Hire Me</a
+        >
+      </div>
+    </nav>
+
+    <!-- HERO -->
+    <section
+      id="hero"
+      class="relative min-h-screen flex items-center overflow-hidden pt-20"
+    >
+      <div
+        class="hero-blob w-96 h-96 top-10 -left-20"
+        style="background: #00d4ff"
+      ></div>
+      <div
+        class="hero-blob w-80 h-80 bottom-20 right-0"
+        style="background: #7c3aed; opacity: 0.15"
+      ></div>
+      <div
+        class="hero-blob w-64 h-64 top-1/2 right-1/3"
+        style="background: #00d4ff; opacity: 0.12"
+      ></div>
+      <div
+        class="absolute inset-0 opacity-25"
+        style="
+          background-image:
+            linear-gradient(rgba(10, 15, 30, 0.04) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(10, 15, 30, 0.04) 1px, transparent 1px);
+          background-size: 40px 40px;
+        "
+      ></div>
+
+      <div
+        class="relative max-w-6xl mx-auto px-6 py-24 grid lg:grid-cols-2 gap-16 items-center w-full"
+      >
+        <div>
+          <div
+            class="inline-flex items-center gap-2 bg-white border border-slate-200 rounded-full px-4 py-1.5 mb-8 shadow-sm"
+          >
+            <span
+              class="w-2 h-2 rounded-full bg-green-400 animate-pulse"
+            ></span>
+            <span
+              class="text-xs font-medium text-slate-600"
+              style="font-family: 'Space Grotesk', sans-serif"
+              >Open to opportunities</span
+            >
+          </div>
+
+          <h1
+            class="text-5xl lg:text-6xl font-bold leading-tight mb-4 tracking-tight"
+            style="font-family: 'Space Grotesk', sans-serif"
+          >
+            <span
+              x-text="settings.hero_title_line1 || 'Building digital'"
+            ></span
+            ><br />
+            <span
+              class="gradient-text"
+              x-text="settings.hero_title_line2 || 'experiences'"
+            ></span
+            ><br />
+            <span x-text="settings.hero_title_line3 || 'that scale.'"></span>
+          </h1>
+
+          <p
+            class="text-slate-500 mb-8"
+            style="font-family: 'JetBrains Mono', monospace; font-size: 0.88rem"
+          >
+            &gt;
+            <span x-text="typedText" class="text-cyan-600 font-medium"></span
+            ><span class="cursor"></span>
+          </p>
+
+          <p
+            class="text-slate-600 leading-relaxed mb-10 max-w-lg"
+            x-text="settings.hero_description || 'Full stack engineer with 6+ years...'"
+          ></p>
+
+          <div class="flex flex-wrap gap-4 mb-12">
+            <a href="#projects" class="btn-cyan">View My Work</a>
+            <a href="#intro-video" class="btn-ghost">Watch Intro</a>
+
+            <!-- Resume button – gradient violet -->
+            <a
+              href="https://drive.google.com/file/d/1D3pFPv8qllpARxt_50H7-jK5akuKhB7x/view?usp=sharing"
+              target="_blank"
+              class="inline-flex items-center gap-2 bg-gradient-to-r from-violet-500 to-purple-600 text-white px-5 py-3 rounded-xl font-semibold text-sm hover:from-violet-600 hover:to-purple-700 transition-all shadow-md shadow-purple-200 hover:shadow-lg hover:shadow-purple-300"
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"
+                />
+                <polyline points="14 2 14 8 20 8" />
+                <line x1="16" y1="13" x2="8" y2="13" />
+                <line x1="16" y1="17" x2="8" y2="17" />
+                <polyline points="10 9 9 9 8 9" />
+              </svg>
+              Resume
+            </a>
+          </div>
+          <div class="flex flex-wrap items-center gap-5">
+            <a
+              :href="settings.contact_github ? 'https://'+settings.contact_github : '#'"
+              target="_blank"
+              class="text-slate-400 hover:text-slate-700"
+              ><svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path
+                  d="M12 2C6.48 2 2 6.48 2 12c0 4.42 2.87 8.17 6.84 9.49.5.09.68-.22.68-.48v-1.71C6.73 19.91 6.14 18 6.14 18c-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.61.07-.61 1 .07 1.53 1.03 1.53 1.03.89 1.52 2.34 1.08 2.91.83.09-.65.35-1.08.63-1.33-2.22-.25-4.56-1.11-4.56-4.95 0-1.09.39-1.99 1.03-2.69-.1-.25-.45-1.27.1-2.65 0 0 .84-.27 2.75 1.02A9.56 9.56 0 0112 6.8c.85.004 1.71.11 2.51.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.38.2 2.4.1 2.65.64.7 1.03 1.6 1.03 2.69 0 3.85-2.34 4.7-4.57 4.95.36.31.68.92.68 1.85v2.74c0 .27.18.58.69.48A10.01 10.01 0 0022 12c0-5.52-4.48-10-10-10z"
+                /></svg
+            ></a>
+            <a
+              :href="settings.contact_linkedin ? 'https://'+settings.contact_linkedin : '#'"
+              target="_blank"
+              class="text-slate-400 hover:text-blue-600"
+              ><svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path
+                  d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"
+                /></svg
+            ></a>
+            <a
+              :href="settings.contact_twitter ? 'https://'+settings.contact_twitter : '#'"
+              target="_blank"
+              class="text-slate-400 hover:text-slate-800"
+              ><svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path
+                  d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"
+                /></svg
+            ></a>
+            <span class="w-px h-5 bg-slate-300"></span>
+            <div class="flex gap-5">
+              <div class="text-center">
+                <div
+                  class="font-bold text-lg leading-none"
+                  style="font-family: 'Space Grotesk', sans-serif"
+                  x-text="settings.hero_years || '6+'"
+                ></div>
+                <div class="text-xs text-slate-400 mt-0.5">Years</div>
+              </div>
+              <div class="text-center">
+                <div
+                  class="font-bold text-lg leading-none"
+                  style="font-family: 'Space Grotesk', sans-serif"
+                  x-text="settings.hero_projects || '40+'"
+                ></div>
+                <div class="text-xs text-slate-400 mt-0.5">Projects</div>
+              </div>
+              <div class="text-center">
+                <div
+                  class="font-bold text-lg leading-none"
+                  style="font-family: 'Space Grotesk', sans-serif"
+                  x-text="settings.hero_clients || '18'"
+                ></div>
+                <div class="text-xs text-slate-400 mt-0.5">Clients</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="relative hidden lg:flex items-center justify-center">
+          <div class="relative w-full max-w-sm">
+            <div
+              class="rounded-2xl overflow-hidden shadow-2xl border border-slate-200"
+            >
+              <div class="browser-chrome">
+                <div class="browser-dot bg-red-400"></div>
+                <div class="browser-dot bg-yellow-400"></div>
+                <div class="browser-dot bg-green-400"></div>
+                <div class="browser-url">
+                  zawadbinsharif.github.io/api/health
+                </div>
+              </div>
+              <div
+                class="bg-white p-5 leading-relaxed"
+                style="
+                  font-family: 'JetBrains Mono', monospace;
+                  font-size: 0.78rem;
+                "
+              >
+                <div class="text-slate-400 mb-1">// stack.ts</div>
+                <div>
+                  <span class="text-purple-500">const</span>
+                  <span class="text-cyan-600">stack</span>
+                  <span class="text-slate-800">=</span>
+                  <span class="text-slate-800">{</span>
+                </div>
+                <div class="ml-4">
+                  <span class="text-blue-500">frontend</span
+                  ><span class="text-slate-800">: </span
+                  ><span class="text-green-500">[</span
+                  ><span class="text-amber-500">'React'</span
+                  ><span class="text-slate-800">, </span
+                  ><span class="text-amber-500">'Next.js'</span
+                  ><span class="text-green-500">]</span
+                  ><span class="text-slate-800">,</span>
+                </div>
+                <div class="ml-4">
+                  <span class="text-blue-500">mobile</span
+                  ><span class="text-slate-800">: </span
+                  ><span class="text-green-500">[</span
+                  ><span class="text-amber-500">'React Native'</span
+                  ><span class="text-slate-800">, </span
+                  ><span class="text-amber-500">'Flutter'</span
+                  ><span class="text-green-500">]</span
+                  ><span class="text-slate-800">,</span>
+                </div>
+                <div class="ml-4">
+                  <span class="text-blue-500">backend</span
+                  ><span class="text-slate-800">: </span
+                  ><span class="text-green-500">[</span
+                  ><span class="text-amber-500">'Node.js'</span
+                  ><span class="text-slate-800">, </span
+                  ><span class="text-amber-500">'Django'</span
+                  ><span class="text-green-500">]</span
+                  ><span class="text-slate-800">,</span>
+                </div>
+                <div class="ml-4">
+                  <span class="text-blue-500">cloud</span
+                  ><span class="text-slate-800">: </span
+                  ><span class="text-green-500">[</span
+                  ><span class="text-amber-500">'AWS'</span
+                  ><span class="text-slate-800">, </span
+                  ><span class="text-amber-500">'Vercel'</span
+                  ><span class="text-green-500">]</span
+                  ><span class="text-slate-800">,</span>
+                </div>
+                <div class="ml-4">
+                  <span class="text-blue-500">status</span
+                  ><span class="text-slate-800">: </span
+                  ><span class="text-green-500">'available 🟢'</span
+                  ><span class="text-slate-800">,</span>
+                </div>
+                <div><span class="text-slate-800">};</span></div>
+                <div class="mt-3 text-emerald-600">
+                  // ✓ All systems operational
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ABOUT -->
+    <section id="about" class="py-24 bg-white">
+      <div class="max-w-6xl mx-auto px-6">
+        <div class="grid lg:grid-cols-2 gap-16 items-center">
+          <div class="relative">
+            <div class="relative w-72 mx-auto lg:mx-0">
+              <div
+                class="w-72 h-72 rounded-3xl overflow-hidden border-4 border-white shadow-2xl"
+                style="
+                  background: linear-gradient(
+                    135deg,
+                    #0a0f1e 0%,
+                    #1a2540 50%,
+                    #00d4ff 100%
+                  );
+                "
+              >
+                <template x-if="settings.about_image_url">
+                  <img
+                    :src="settings.about_image_url"
+                    class="w-full h-full object-cover"
+                  />
+                </template>
+                <template x-if="!settings.about_image_url">
+                  <div class="w-full h-full flex items-center justify-center">
+                    <svg
+                      width="120"
+                      height="120"
+                      viewBox="0 0 120 120"
+                      fill="none"
+                    >
+                      <circle
+                        cx="60"
+                        cy="45"
+                        r="22"
+                        fill="rgba(255,255,255,0.2)"
+                      />
+                      <ellipse
+                        cx="60"
+                        cy="95"
+                        rx="35"
+                        ry="22"
+                        fill="rgba(255,255,255,0.15)"
+                      />
+                      <text
+                        x="60"
+                        y="54"
+                        text-anchor="middle"
+                        fill="white"
+                        font-size="28"
+                        font-family="Space Grotesk"
+                        font-weight="700"
+                      >
+                        ZS
+                      </text>
+                    </svg>
+                  </div>
+                </template>
+              </div>
+              <div class="absolute -right-8 top-8 stat-badge p-3 shadow-lg">
+                <div
+                  class="text-xl font-bold text-cyan-600"
+                  style="font-family: 'Space Grotesk', sans-serif"
+                  x-text="settings.hero_projects || '40+'"
+                ></div>
+                <div class="text-xs text-slate-400">Projects</div>
+              </div>
+              <div class="absolute -left-6 bottom-10 stat-badge p-3 shadow-lg">
+                <div
+                  class="text-xl font-bold text-slate-800"
+                  style="font-family: 'Space Grotesk', sans-serif"
+                  x-text="settings.hero_years || '6 yrs'"
+                ></div>
+                <div class="text-xs text-slate-400">Experience</div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="section-label mb-4">— About me</div>
+            <h2
+              class="text-3xl lg:text-4xl font-bold mb-6 tracking-tight"
+              style="font-family: 'Space Grotesk', sans-serif"
+            >
+              I turn ideas into<br /><span class="gradient-text"
+                >shippable products.</span
+              >
+            </h2>
+            <p
+              class="text-slate-600 leading-relaxed mb-5"
+              x-text="settings.about_bio_paragraph1 || ''"
+            ></p>
+            <p
+              class="text-slate-600 leading-relaxed mb-8"
+              x-text="settings.about_bio_paragraph2 || ''"
+            ></p>
+            <div class="grid grid-cols-2 gap-4 mb-8">
+              <template x-for="h in aboutHighlights" :key="h">
+                <div class="flex items-start gap-3">
+                  <div
+                    class="w-6 h-6 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0"
+                    style="background: rgba(0, 153, 187, 0.1)"
+                  >
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                      <path
+                        d="M2 6l3 3 5-5"
+                        stroke="#0099BB"
+                        stroke-width="1.8"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
+                  </div>
+                  <span class="text-sm text-slate-600" x-text="h"></span>
+                </div>
+              </template>
+            </div>
+            <a href="#contact" class="btn-primary">Let's collaborate</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- INTRO VIDEO -->
+    <section id="intro-video" class="py-24" style="background: var(--bg)">
+      <div class="max-w-5xl mx-auto px-6">
+        <div class="text-center mb-12">
+          <div class="section-label mb-3">— Watch & listen</div>
+          <h2
+            class="text-3xl lg:text-4xl font-bold tracking-tight"
+            style="font-family: 'Space Grotesk', sans-serif"
+          >
+            Meet me in two minutes
+          </h2>
+        </div>
+        <div class="video-frame-wrap">
+          <iframe
+            :src="'https://www.youtube.com/embed/' + (settings.intro_video_id || 'dQw4w9WgXcQ') + '?rel=0&modestbranding=1'"
+            title="Zawad Bin Sharif - Developer Introduction"
+            frameborder="0"
+            allow="
+              accelerometer;
+              autoplay;
+              clipboard-write;
+              encrypted-media;
+              gyroscope;
+              picture-in-picture;
+            "
+            allowfullscreen
+            class="absolute inset-0 w-full h-full border-0"
+          ></iframe>
+        </div>
+      </div>
+    </section>
+
+    <!-- PROJECTS (dynamic from Supabase) -->
+    <section id="projects" class="py-24 bg-white">
+      <div class="max-w-6xl mx-auto px-6">
+        <div class="text-center mb-14">
+          <div class="section-label mb-3">— Selected work</div>
+          <h2
+            class="text-3xl lg:text-4xl font-bold tracking-tight"
+            style="font-family: 'Space Grotesk', sans-serif"
+          >
+            Projects I'm proud of
+          </h2>
+        </div>
+        <div class="flex flex-wrap gap-2 justify-center mb-10">
+          <template x-for="cat in categories" :key="cat">
+            <button
+              @click="activeCategory=cat"
+              :class="activeCategory===cat ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-600 border-slate-200 hover:border-slate-400'"
+              class="px-4 py-1.5 rounded-full text-sm font-medium border transition-all"
+              style="font-family: 'Space Grotesk', sans-serif"
+              x-text="cat"
+            ></button>
+          </template>
+        </div>
+        <div
+          x-show="loading.projects"
+          class="grid md:grid-cols-2 lg:grid-cols-3 gap-6"
+        >
+          <template x-for="i in 6" :key="i"
+            ><div
+              class="bg-white rounded-2xl border border-slate-100 overflow-hidden"
+            >
+              <div class="skeleton w-full" style="padding-top: 56.25%"></div>
+              <div class="p-5 space-y-3">
+                <div class="skeleton h-5 w-3/4"></div>
+                <div class="skeleton h-4 w-full"></div>
+                <div class="flex gap-2">
+                  <div class="skeleton h-5 w-16 rounded-full"></div>
+                  <div class="skeleton h-5 w-16 rounded-full"></div>
+                  <div class="skeleton h-5 w-12 rounded-full"></div>
+                </div>
+              </div></div
+          ></template>
+        </div>
+        <div
+          x-show="!loading.projects"
+          class="grid md:grid-cols-2 lg:grid-cols-3 gap-6"
+        >
+          <template x-for="p in filteredProjects" :key="p.id">
+            <div class="project-card" @click="openProject(p)">
+              <div class="preview-wrapper">
+                <div
+                  class="absolute inset-0"
+                  :style="`background:linear-gradient(135deg,${p.bg_from || '#0f2027'},${p.bg_to || '#00D4FF'})`"
+                >
+                  <!-- Uploaded project image (if exists) -->
+                  <img
+                    x-show="p.project_image_url"
+                    :src="p.project_image_url"
+                    class="absolute inset-0 w-full h-full object-cover"
+                    onerror="this.style.display = 'none'"
+                  />
+
+                  <!-- Fallback gradient + emoji when no image -->
+                  <div
+                    class="relative z-10 flex flex-col items-center justify-center h-full"
+                    :class="p.project_image_url ? 'bg-black/30' : ''"
+                  >
+                    <div
+                      x-show="!p.project_image_url"
+                      class="text-5xl mb-2"
+                      x-text="p.emoji || '💻'"
+                    ></div>
+                    <div
+                      class="text-white text-xs opacity-60"
+                      x-text="p.preview_label || ''"
+                    ></div>
+                  </div>
+
+                  <!-- Category badge (always visible) -->
+                  <div
+                    class="absolute top-3 left-3 bg-white/90 rounded-full px-3 py-0.5 text-xs font-semibold text-slate-700"
+                    x-text="p.category"
+                  ></div>
+
+                  <!-- Featured badge -->
+                  <template x-if="p.featured">
+                    <div
+                      class="absolute top-3 right-3 bg-yellow-400 rounded-full px-2.5 py-0.5 text-xs font-bold text-yellow-900"
+                    >
+                      ★ Featured
+                    </div>
+                  </template>
+                </div>
+
+                <!-- View Details overlay on hover -->
+                <div class="preview-overlay">
+                  <div
+                    class="bg-white rounded-xl px-5 py-2.5 shadow-lg flex items-center gap-2 text-sm font-semibold text-slate-800"
+                    style="font-family: 'Space Grotesk', sans-serif"
+                  >
+                    <svg width="15" height="15" fill="none">
+                      <path
+                        d="M2 7.5l4 4 7-8"
+                        stroke="#0099BB"
+                        stroke-width="1.8"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
+                    View Details
+                  </div>
+                </div>
+              </div>
+
+              <!-- Card body -->
+              <div class="p-5">
+                <h3
+                  class="font-bold text-base mb-1.5 tracking-tight"
+                  style="font-family: 'Space Grotesk', sans-serif"
+                  x-text="p.title"
+                ></h3>
+                <p
+                  class="text-sm text-slate-500 leading-relaxed mb-4 line-clamp-2"
+                  x-text="p.short"
+                ></p>
+                <div class="flex flex-wrap gap-1.5 mb-4">
+                  <template x-for="t in p.tech.slice(0,3)" :key="t">
+                    <span class="tech-pill" x-text="t"></span>
+                  </template>
+                  <template x-if="p.tech.length > 3">
+                    <span
+                      class="tech-pill"
+                      x-text="'+' + (p.tech.length - 3)"
+                    ></span>
+                  </template>
+                </div>
+                <div
+                  class="flex items-center justify-between pt-3 border-t border-slate-100"
+                >
+                  <div class="text-xs text-slate-400">
+                    <span x-text="p.year"></span> ·
+                    <span x-text="p.type"></span>
+                  </div>
+                  <div
+                    class="flex items-center gap-1 text-cyan-600 text-sm font-semibold"
+                    style="font-family: 'Space Grotesk', sans-serif"
+                  >
+                    Open
+                    <svg width="13" height="13" fill="none">
+                      <path
+                        d="M3 6.5h7M7 3.5l3 3-3 3"
+                        stroke="currentColor"
+                        stroke-width="1.6"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </template>
+        </div>
+      </div>
+    </section>
+
+    <!-- SKILLS -->
+    <section id="skills" class="py-24" style="background: var(--bg)">
+      <div class="max-w-6xl mx-auto px-6">
+        <div class="text-center mb-14">
+          <div class="section-label mb-3">— Tech stack</div>
+          <h2
+            class="text-3xl lg:text-4xl font-bold tracking-tight"
+            style="font-family: 'Space Grotesk', sans-serif"
+          >
+            Tools I work with daily
+          </h2>
+        </div>
+        <div
+          x-show="loading.skills"
+          class="grid sm:grid-cols-2 lg:grid-cols-4 gap-5"
+        >
+          <template x-for="i in 4" :key="i"
+            ><div
+              class="bg-white rounded-2xl border border-slate-100 p-5 space-y-3"
+            >
+              <div class="skeleton w-10 h-10 rounded-xl"></div>
+              <div class="skeleton h-4 w-20"></div>
+              <div class="flex flex-wrap gap-1.5">
+                <div class="skeleton h-6 w-14 rounded-lg"></div>
+                <div class="skeleton h-6 w-16 rounded-lg"></div>
+                <div class="skeleton h-6 w-12 rounded-lg"></div>
+              </div></div
+          ></template>
+        </div>
+        <div
+          x-show="!loading.skills"
+          class="grid sm:grid-cols-2 lg:grid-cols-4 gap-5"
+        >
+          <template x-for="cat in skillCategories" :key="cat.id">
+            <div class="skill-card p-5">
+              <div
+                class="w-10 h-10 rounded-xl flex items-center justify-center mb-4 text-xl"
+                :style="`background:${cat.bg_color || 'rgba(0,153,187,0.1)'}`"
+                x-text="cat.icon || '🛠️'"
+              ></div>
+              <h3
+                class="font-semibold text-sm mb-3"
+                style="font-family: 'Space Grotesk', sans-serif"
+                x-text="cat.name"
+              ></h3>
+              <div class="flex flex-wrap gap-1.5">
+                <template x-for="skill in cat.skills" :key="skill.id">
+                  <span
+                    class="text-xs px-2.5 py-1 rounded-lg bg-slate-50 text-slate-600 border border-slate-100 font-medium"
+                    x-text="skill.name"
+                  ></span>
+                </template>
+              </div>
+            </div>
+          </template>
+        </div>
+      </div>
+    </section>
+
+    <!-- TIMELINE -->
+    <section id="timeline" class="py-24 bg-white">
+      <div class="max-w-3xl mx-auto px-6">
+        <div class="text-center mb-14">
+          <div class="section-label mb-3">— Career path</div>
+          <h2
+            class="text-3xl lg:text-4xl font-bold tracking-tight"
+            style="font-family: 'Space Grotesk', sans-serif"
+          >
+            Where I've worked
+          </h2>
+        </div>
+        <div x-show="loading.timeline" class="space-y-6 pl-14">
+          <template x-for="i in 4" :key="i"
+            ><div
+              class="bg-slate-50 rounded-2xl p-5 border border-slate-100 space-y-2"
+            >
+              <div class="skeleton h-5 w-2/3"></div>
+              <div class="skeleton h-4 w-1/3"></div>
+              <div class="skeleton h-4 w-full"></div></div
+          ></template>
+        </div>
+        <div x-show="!loading.timeline" class="relative">
+          <div class="absolute left-5 top-0 bottom-0 timeline-line"></div>
+          <div class="space-y-8 pl-14">
+            <template x-for="job in timeline" :key="job.id">
+              <div class="relative">
+                <div class="timeline-dot absolute -left-9 top-1"></div>
+                <div
+                  class="bg-slate-50 rounded-2xl p-5 border border-slate-100"
+                >
+                  <div
+                    class="flex flex-wrap items-start justify-between gap-3 mb-2"
+                  >
+                    <div>
+                      <h3
+                        class="font-bold text-base"
+                        style="font-family: 'Space Grotesk', sans-serif"
+                        x-text="job.role"
+                      ></h3>
+                      <div
+                        class="text-sm font-medium mt-0.5"
+                        style="color: var(--cyan2)"
+                        x-text="job.company"
+                      ></div>
+                    </div>
+                    <span
+                      class="text-xs bg-white text-slate-500 rounded-full px-3 py-1 border border-slate-200"
+                      style="font-family: 'JetBrains Mono', monospace"
+                      x-text="job.period"
+                    ></span>
+                  </div>
+                  <p
+                    class="text-sm text-slate-600 leading-relaxed mb-3"
+                    x-text="job.description"
+                  ></p>
+                  <div class="flex flex-wrap gap-1.5">
+                    <template x-for="t in job.tags" :key="t"
+                      ><span class="tech-pill" x-text="t"></span
+                    ></template>
+                  </div>
+                </div>
+              </div>
+            </template>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TESTIMONIALS -->
+    <section class="py-20" style="background: var(--bg)">
+      <div class="max-w-6xl mx-auto px-6">
+        <div class="section-label text-center mb-10">— What clients say</div>
+        <div x-show="loading.testimonials" class="grid md:grid-cols-3 gap-6">
+          <template x-for="i in 3" :key="i"
+            ><div
+              class="bg-white rounded-2xl p-6 border border-slate-100 space-y-3"
+            >
+              <div class="skeleton h-4 w-20"></div>
+              <div class="skeleton h-4 w-full"></div>
+              <div class="skeleton h-4 w-3/4"></div></div
+          ></template>
+        </div>
+        <div x-show="!loading.testimonials" class="grid md:grid-cols-3 gap-6">
+          <template x-for="t in testimonials" :key="t.id">
+            <div
+              class="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm"
+            >
+              <div class="flex items-center gap-3 mb-4">
+                <div
+                  class="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold"
+                  :style="`background:${t.color || '#6366f1'}`"
+                  x-text="t.initials || '??'"
+                ></div>
+                <div>
+                  <div
+                    class="text-sm font-semibold text-slate-800"
+                    style="font-family: 'Space Grotesk', sans-serif"
+                    x-text="t.name"
+                  ></div>
+                  <div class="text-xs text-slate-400" x-text="t.title"></div>
+                </div>
+              </div>
+              <p
+                class="text-sm text-slate-600 leading-relaxed italic"
+                x-text="'“' + t.quote + '”'"
+              ></p>
+            </div>
+          </template>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTACT -->
+    <section id="contact" class="py-24 bg-white">
+      <div class="max-w-5xl mx-auto px-6">
+        <div class="text-center mb-12">
+          <div class="section-label mb-3">— Get in touch</div>
+          <h2
+            class="text-3xl lg:text-4xl font-bold tracking-tight"
+            style="font-family: 'Space Grotesk', sans-serif"
+          >
+            Have a project in mind?
+          </h2>
+          <p class="text-slate-500 mt-3 max-w-md mx-auto text-sm">
+            I'm available for freelance work and open to full-time roles. Drop
+            me a message — I reply within 24 hours.
+          </p>
+        </div>
+        <div class="contact-card p-8 lg:p-12">
+          <div
+            class="contact-glow w-72 h-72 -top-16 -left-16 opacity-10"
+            style="background: #00d4ff"
+          ></div>
+          <div
+            class="contact-glow w-56 h-56 -bottom-10 right-0 opacity-08"
+            style="background: #7c3aed"
+          ></div>
+          <div class="relative z-10 grid lg:grid-cols-2 gap-12 items-start">
+            <div>
+              <h3
+                class="text-xl font-bold text-slate-800 mb-2"
+                style="font-family: 'Space Grotesk', sans-serif"
+              >
+                Let's build something great
+              </h3>
+              <p class="text-slate-500 leading-relaxed mb-8 text-sm">
+                Whether you have a fully scoped project or just an idea you want
+                to talk through, I'm happy to jump on a call.
+              </p>
+              <div class="space-y-4">
+                <a
+                  :href="'mailto:' + (settings.contact_email || 'alex@example.com')"
+                  class="flex items-center gap-3 text-slate-600 hover:text-slate-900 transition-colors group"
+                >
+                  <div
+                    class="w-10 h-10 rounded-xl bg-slate-100 group-hover:bg-cyan-50 flex items-center justify-center transition-colors border border-slate-200"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                      <path
+                        d="M2 4l6 5 6-5M2 4h12v9H2V4z"
+                        stroke="#0099BB"
+                        stroke-width="1.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
+                  </div>
+                  <div>
+                    <div class="text-xs text-slate-400 mb-0.5">Email</div>
+                    <div
+                      class="text-sm font-medium"
+                      x-text="settings.contact_email || 'alex@example.com'"
+                    ></div>
+                  </div>
+                </a>
+                <a
+                  :href="'https://' + (settings.contact_github || '#')"
+                  target="_blank"
+                  class="flex items-center gap-3 text-slate-600 hover:text-slate-900 transition-colors group"
+                >
+                  <div
+                    class="w-10 h-10 rounded-xl bg-slate-100 group-hover:bg-slate-200 flex items-center justify-center transition-colors border border-slate-200"
+                  >
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="#374151"
+                    >
+                      <path
+                        d="M12 2C6.48 2 2 6.48 2 12c0 4.42 2.87 8.17 6.84 9.49.5.09.68-.22.68-.48v-1.71C6.73 19.91 6.14 18 6.14 18c-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.61.07-.61 1 .07 1.53 1.03 1.53 1.03.89 1.52 2.34 1.08 2.91.83.09-.65.35-1.08.63-1.33-2.22-.25-4.56-1.11-4.56-4.95 0-1.09.39-1.99 1.03-2.69-.1-.25-.45-1.27.1-2.65 0 0 .84-.27 2.75 1.02A9.56 9.56 0 0112 6.8c.85.004 1.71.11 2.51.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.38.2 2.4.1 2.65.64.7 1.03 1.6 1.03 2.69 0 3.85-2.34 4.7-4.57 4.95.36.31.68.92.68 1.85v2.74c0 .27.18.58.69.48A10.01 10.01 0 0022 12c0-5.52-4.48-10-10-10z"
+                      />
+                    </svg>
+                  </div>
+                  <div>
+                    <div class="text-xs text-slate-400 mb-0.5">GitHub</div>
+                    <div
+                      class="text-sm font-medium"
+                      x-text="settings.contact_github || 'github.com/zawadbinsharif'"
+                    ></div>
+                  </div>
+                </a>
+                <a
+                  :href="'https://' + (settings.contact_linkedin || '#')"
+                  target="_blank"
+                  class="flex items-center gap-3 text-slate-600 hover:text-slate-900 transition-colors group"
+                >
+                  <div
+                    class="w-10 h-10 rounded-xl bg-slate-100 group-hover:bg-blue-50 flex items-center justify-center transition-colors border border-slate-200"
+                  >
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="#2563eb"
+                    >
+                      <path
+                        d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"
+                      />
+                    </svg>
+                  </div>
+                  <div>
+                    <div class="text-xs text-slate-400 mb-0.5">LinkedIn</div>
+                    <div
+                      class="text-sm font-medium"
+                      x-text="settings.contact_linkedin || 'linkedin.com/in/zawadbinsharif'"
+                    ></div>
+                  </div>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════════════════ PROJECT LIGHTBOX ════════════════════ -->
+    <!-- ════════════════════ PROJECT LIGHTBOX ════════════════════ -->
+    <div
+      x-show="selectedProject"
+      x-transition:enter="transition ease-out duration-200"
+      x-transition:enter-start="opacity-0"
+      x-transition:enter-end="opacity-100"
+      x-transition:leave="transition ease-in duration-150"
+      x-transition:leave-start="opacity-100"
+      x-transition:leave-end="opacity-0"
+      class="lightbox-backdrop"
+      @click.self="closeProject()"
+    >
+      <div
+        class="lightbox-panel flex flex-col"
+        x-transition:enter="transition ease-out duration-250"
+        x-transition:enter-start="opacity-0 scale-95 translate-y-4"
+        x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+      >
+        <template x-if="selectedProject">
+          <div class="flex flex-col max-h-[90vh]">
+            <!-- ═══ STICKY TAB BAR (top) ═══ -->
+            <div
+              class="sticky top-0 z-20 bg-white/95 backdrop-blur-sm border-b border-slate-100 px-6 pt-5 pb-3 flex items-center gap-2"
+            >
+              <button
+                @click="lbTab = 'preview'"
+                :class="lbTab === 'preview' 
+              ? 'bg-slate-900 text-white shadow-lg shadow-slate-200' 
+              : 'bg-slate-50 text-slate-600 hover:bg-slate-100'"
+                class="px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300"
+                style="font-family: 'Space Grotesk', sans-serif"
+              >
+                📋 Preview
+              </button>
+
+              <button
+                @click="lbTab = 'video'"
+                :class="lbTab === 'video' 
+              ? 'bg-gradient-to-r from-red-500 to-rose-600 text-white shadow-lg shadow-red-200' 
+              : 'bg-slate-50 text-slate-600 hover:bg-red-50 hover:text-red-500'"
+                class="px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 flex items-center gap-1.5 group"
+                style="font-family: 'Space Grotesk', sans-serif"
+              >
+                <span class="relative flex items-center justify-center w-5 h-5">
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 14 14"
+                    fill="none"
+                    class="transition-transform duration-300"
+                    :class="lbTab === 'video' ? 'scale-110' : 'group-hover:scale-110'"
+                  >
+                    <circle
+                      cx="7"
+                      cy="7"
+                      r="6.5"
+                      :stroke="lbTab === 'video' ? 'white' : 'currentColor'"
+                      stroke-width="1.2"
+                    />
+                    <path
+                      d="M5.5 4.5l5 2.5-5 2.5V4.5z"
+                      :fill="lbTab === 'video' ? 'white' : 'currentColor'"
+                    />
+                  </svg>
+                </span>
+                <span>Watch Demo</span>
+                <span x-show="lbTab === 'video'" class="flex h-2 w-2">
+                  <span
+                    class="animate-ping absolute inline-flex h-2 w-2 rounded-full bg-red-400 opacity-75"
+                  ></span>
+                  <span
+                    class="relative inline-flex rounded-full h-2 w-2 bg-red-300"
+                  ></span>
+                </span>
+              </button>
+
+              <div class="flex-1"></div>
+
+              <button
+                @click="closeProject()"
+                class="w-9 h-9 rounded-full hover:bg-slate-100 flex items-center justify-center transition-all duration-200 text-slate-400 hover:text-slate-600 hover:rotate-90"
+              >
+                <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                  <path
+                    d="M3 3l9 9M12 3l-9 9"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            <!-- ═══ SCROLLABLE BODY ═══ -->
+            <div class="flex-1 overflow-y-auto">
+              <!-- Tab: Preview -->
+              <div x-show="lbTab === 'preview'">
+                <!-- Large preview area -->
+                <div class="relative aspect-video bg-gray-100">
+                  <div
+                    :style="`background:linear-gradient(135deg,${selectedProject.bg_from || '#0f2027'},${selectedProject.bg_to || '#00D4FF'})`"
+                    class="absolute inset-0"
+                  ></div>
+                  <img
+                    x-show="selectedProject.project_image_url"
+                    :src="selectedProject.project_image_url"
+                    class="absolute inset-0 w-full h-full object-cover"
+                    onerror="this.style.display = 'none'"
+                    alt="Project preview"
+                  />
+                  <div
+                    x-show="!selectedProject.project_image_url"
+                    class="absolute inset-0 flex flex-col items-center justify-center text-white"
+                  >
+                    <div
+                      class="text-8xl mb-4"
+                      x-text="selectedProject.emoji || '💻'"
+                    ></div>
+                    <div
+                      class="text-lg font-bold opacity-90"
+                      style="font-family: 'Space Grotesk', sans-serif"
+                      x-text="selectedProject.title"
+                    ></div>
+                    <div
+                      class="text-white/70 text-xs mt-1"
+                      style="font-family: 'JetBrains Mono', monospace"
+                      x-text="selectedProject.preview_label || ''"
+                    ></div>
+                  </div>
+                </div>
+
+                <!-- Details (scrollable) -->
+                <div class="p-7 pb-28">
+                  <div
+                    class="flex flex-wrap items-start justify-between gap-4 mb-5"
+                  >
+                    <div>
+                      <div class="flex items-center gap-2 mb-1">
+                        <span
+                          class="section-label text-xs"
+                          x-text="selectedProject.category || ''"
+                        ></span>
+                        <span class="text-slate-300 text-sm">·</span>
+                        <span
+                          class="text-xs font-mono text-slate-400"
+                          x-text="selectedProject.year || ''"
+                        ></span>
+                      </div>
+                      <h2
+                        class="text-2xl font-bold tracking-tight"
+                        style="font-family: 'Space Grotesk', sans-serif"
+                        x-text="selectedProject.title"
+                      ></h2>
+                    </div>
+                    <div class="flex gap-3">
+                      <a
+                        :href="selectedProject.live_url || '#'"
+                        target="_blank"
+                        class="btn-cyan"
+                        style="
+                          padding: 9px 18px;
+                          border-radius: 10px;
+                          font-size: 0.82rem;
+                        "
+                      >
+                        <svg
+                          width="13"
+                          height="13"
+                          viewBox="0 0 13 13"
+                          fill="none"
+                        >
+                          <path
+                            d="M2 6.5h9M8 3.5l3 3-3 3"
+                            stroke="currentColor"
+                            stroke-width="1.5"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          />
+                        </svg>
+                        Live Demo
+                      </a>
+                      <a
+                        :href="selectedProject.github_url || '#'"
+                        target="_blank"
+                        class="btn-ghost"
+                        style="
+                          padding: 9px 18px;
+                          border-radius: 10px;
+                          font-size: 0.82rem;
+                        "
+                      >
+                        <svg
+                          width="13"
+                          height="13"
+                          viewBox="0 0 24 24"
+                          fill="currentColor"
+                        >
+                          <path
+                            d="M12 2C6.48 2 2 6.48 2 12c0 4.42 2.87 8.17 6.84 9.49.5.09.68-.22.68-.48v-1.71C6.73 19.91 6.14 18 6.14 18c-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.61.07-.61 1 .07 1.53 1.03 1.53 1.03.89 1.52 2.34 1.08 2.91.83.09-.65.35-1.08.63-1.33-2.22-.25-4.56-1.11-4.56-4.95 0-1.09.39-1.99 1.03-2.69-.1-.25-.45-1.27.1-2.65 0 0 .84-.27 2.75 1.02A9.56 9.56 0 0112 6.8c.85.004 1.71.11 2.51.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.38.2 2.4.1 2.65.64.7 1.03 1.6 1.03 2.69 0 3.85-2.34 4.7-4.57 4.95.36.31.68.92.68 1.85v2.74c0 .27.18.58.69.48A10.01 10.01 0 0022 12c0-5.52-4.48-10-10-10z"
+                          />
+                        </svg>
+                        GitHub
+                      </a>
+                    </div>
+                  </div>
+
+                  <p
+                    class="text-slate-600 leading-relaxed mb-6"
+                    x-text="selectedProject.description || ''"
+                  ></p>
+
+                  <!-- Highlights -->
+                  <div class="mb-6">
+                    <h4
+                      class="font-semibold text-sm text-slate-700 mb-3"
+                      style="font-family: 'Space Grotesk', sans-serif"
+                    >
+                      Key highlights
+                    </h4>
+                    <ul class="space-y-2">
+                      <template
+                        x-for="h in (selectedProject.highlights || [])"
+                        :key="h"
+                      >
+                        <li
+                          class="flex items-start gap-2.5 text-sm text-slate-600"
+                        >
+                          <svg
+                            width="16"
+                            height="16"
+                            viewBox="0 0 16 16"
+                            fill="none"
+                            class="mt-0.5 flex-shrink-0"
+                          >
+                            <circle
+                              cx="8"
+                              cy="8"
+                              r="7"
+                              fill="rgba(0,153,187,0.1)"
+                            />
+                            <path
+                              d="M5 8l2.5 2.5L11 6"
+                              stroke="#0099BB"
+                              stroke-width="1.6"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                            />
+                          </svg>
+                          <span x-text="h"></span>
+                        </li>
+                      </template>
+                    </ul>
+                  </div>
+
+                  <!-- Tech stack -->
+                  <div>
+                    <h4
+                      class="font-semibold text-sm text-slate-700 mb-3"
+                      style="font-family: 'Space Grotesk', sans-serif"
+                    >
+                      Tech stack
+                    </h4>
+                    <div class="flex flex-wrap gap-2">
+                      <template
+                        x-for="t in (selectedProject.tech || [])"
+                        :key="t"
+                      >
+                        <span class="tech-pill" x-text="t"></span>
+                      </template>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Tab: Video -->
+              <div x-show="lbTab === 'video'" class="p-7 pb-28">
+                <div class="mb-5">
+                  <h3
+                    class="text-xl font-bold tracking-tight"
+                    style="font-family: 'Space Grotesk', sans-serif"
+                    x-text="selectedProject.title + ' — Demo'"
+                  ></h3>
+                  <p class="text-sm text-slate-500 mt-1">
+                    See a full walkthrough of features and architecture.
+                  </p>
+                </div>
+
+                <div class="aspect-video bg-black rounded-lg overflow-hidden">
+                  <template x-if="selectedProject.youtube_id">
+                    <iframe
+                      :src="'https://www.youtube-nocookie.com/embed/' + selectedProject.youtube_id + '?rel=0&modestbranding=1&autoplay=1'"
+                      :title="selectedProject.title + ' demo video'"
+                      allow="
+                        accelerometer;
+                        autoplay;
+                        clipboard-write;
+                        encrypted-media;
+                        gyroscope;
+                        picture-in-picture;
+                      "
+                      allowfullscreen
+                      class="w-full h-full"
+                    ></iframe>
+                  </template>
+                  <template x-if="!selectedProject.youtube_id">
+                    <div
+                      class="w-full h-full flex flex-col items-center justify-center bg-slate-50 text-slate-400 border-2 border-dashed border-slate-200 rounded-lg"
+                    >
+                      <svg
+                        width="48"
+                        height="48"
+                        viewBox="0 0 48 48"
+                        fill="none"
+                        class="mb-3"
+                      >
+                        <rect width="48" height="48" rx="12" fill="#f1f5f9" />
+                        <path d="M16 14l20 10-20 10V14z" fill="#94a3b8" />
+                      </svg>
+                      <p class="font-medium">No demo video yet</p>
+                      <p class="text-xs mt-1">
+                        Add a
+                        <code class="bg-slate-200 px-1 rounded"
+                          >youtube_id</code
+                        >
+                        to this project
+                      </p>
+                    </div>
+                  </template>
+                </div>
+              </div>
+            </div>
+
+            <!-- ═══ STICKY FOOTER (bottom) – shows only on Preview tab ═══ -->
+            <div
+              x-show="lbTab === 'preview'"
+              class="sticky bottom-0 z-20 bg-white border-t border-slate-100 px-7 py-4 flex items-center justify-between"
+            >
+              <p class="text-sm text-slate-500">Want to see it in action?</p>
+              <button
+                @click="lbTab = 'video'"
+                class="btn-primary"
+                style="
+                  padding: 9px 20px;
+                  border-radius: 10px;
+                  font-size: 0.82rem;
+                "
+              >
+                <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                  <circle
+                    cx="6.5"
+                    cy="6.5"
+                    r="5.5"
+                    stroke="currentColor"
+                    stroke-width="1.3"
+                  />
+                  <path d="M5 4.5l4 2-4 2V4.5z" fill="currentColor" />
+                </svg>
+                Watch Demo
+              </button>
+            </div>
+
+            <!-- Sticky footer for Video tab: back button -->
+            <div
+              x-show="lbTab === 'video'"
+              class="sticky bottom-0 z-20 bg-white border-t border-slate-100 px-7 py-4 flex items-center justify-between"
+            >
+              <a
+                :href="'https://youtube.com/watch?v=' + selectedProject.youtube_id"
+                target="_blank"
+                class="btn-ghost text-sm"
+                style="padding: 8px 16px; border-radius: 9px; font-size: 0.8rem"
+              >
+                Open on YouTube
+              </a>
+              <button
+                @click="lbTab = 'preview'"
+                class="text-sm text-slate-500 hover:text-slate-700 font-medium transition-colors"
+              >
+                ← Back to details
+              </button>
+            </div>
+          </div>
+        </template>
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="py-10 border-t border-slate-200" style="background: #f8faff">
+      <div class="max-w-6xl mx-auto px-6 text-center text-sm text-slate-400">
+        © 2025 Zawad Bin Sharif. Built with Supabase · Tailwind · Alpine.js
+      </div>
+    </footer>
+
+    <script>
+      function portfolio() {
+        const SUPABASE_URL = 'https://edybdawzissejankeknc.supabase.co';
+        const SUPABASE_ANON_KEY =
+          'sb_publishable_uloNzioXCGu8v1Qb7Qa72g_dImCby_R';
+
+        const { createClient } = window.supabase;
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        return {
+          // ═══════════════════════════ DATA ═══════════════════════════
+          settings: {}, // ← MUST BE HERE
+          projects: [],
+          skillCategories: [],
+          timeline: [],
+          testimonials: [],
+          categories: ['All'],
+          activeCategory: 'All',
+          aboutHighlights: [],
+          roles: [],
+          typedText: '',
+          roleIdx: 0,
+          charIdx: 0,
+          deleting: false,
+          typingSpeed: 80,
+          selectedProject: null,
+          lbTab: 'preview',
+          loading: {
+            projects: true,
+            skills: true,
+            timeline: true,
+            testimonials: true,
+          },
+          form: {
+            name: '',
+            email: '',
+            subject: '',
+            message: '',
+            sending: false,
+            sent: false,
+          },
+          toast: { show: false, type: 'success', message: '' },
+
+          // ═══════════════════════════ INIT ═══════════════════════════
+          async init() {
+            // Fetch settings first
+            await this.fetchSettings();
+            // Then fetch everything else
+            await Promise.all([
+              this.fetchProjects(),
+              this.fetchSkills(),
+              this.fetchTimeline(),
+              this.fetchTestimonials(),
+            ]);
+            this.startTyping();
+            document.addEventListener('keydown', (e) => {
+              if (e.key === 'Escape') this.closeProject();
+            });
+          },
+
+          // ═══════════════════════════ FETCH SETTINGS ═══════════════════════════
+          async fetchSettings() {
+            const { data, error } = await supabase
+              .from('settings')
+              .select('key, value');
+            if (error) {
+              console.error('Error fetching settings:', error);
+              // Fallback defaults
+              this.settings = {
+                hero_title_line1: 'Building digital',
+                hero_title_line2: 'experiences',
+                hero_title_line3: 'that scale.',
+                hero_description: 'Full stack engineer with 6+ years...',
+                hero_years: '6+',
+                hero_projects: '40+',
+                hero_clients: '18',
+                about_bio_paragraph1: '...',
+                about_bio_paragraph2: '...',
+                about_highlights: '[]',
+                about_image_url: '',
+                contact_email: 'alex@example.com',
+                contact_github: 'github.com/zawadbinsharif',
+                contact_linkedin: 'linkedin.com/in/zawadbinsharif',
+                contact_twitter: 'x.com/zawadbinsharif',
+                intro_video_id: 'dQw4w9WgXcQ',
+                hero_roles: '[]',
+              };
+              return;
+            }
+            const map = {};
+            (data || []).forEach((row) => {
+              map[row.key] = row.value;
+            });
+            this.settings = map;
+            this.aboutHighlights = JSON.parse(map.about_highlights || '[]');
+            this.roles = JSON.parse(map.hero_roles || '[]');
+          },
+
+          // ═══════════════════════════ PROJECTS ═══════════════════════════
+          async fetchProjects() {
+            this.loading.projects = true;
+            const { data } = await supabase
+              .from('projects')
+              .select('*')
+              .order('display_order');
+            this.projects = data || [];
+            // Update categories
+            const cats = new Set(
+              (data || []).map((p) => p.category).filter(Boolean),
+            );
+            this.categories = ['All', ...cats];
+            this.loading.projects = false;
+          },
+          get filteredProjects() {
+            if (this.activeCategory === 'All') return this.projects;
+            return this.projects.filter(
+              (p) => p.category === this.activeCategory,
+            );
+          },
+          openProject(p) {
+            this.selectedProject = p;
+            this.lbTab = 'preview';
+            document.body.style.overflow = 'hidden';
+          },
+          closeProject() {
+            this.selectedProject = null;
+            document.body.style.overflow = '';
+          },
+
+          // ═══════════════════════════ SKILLS ═══════════════════════════
+          async fetchSkills() {
+            this.loading.skills = true;
+            const { data: cats } = await supabase
+              .from('skill_categories')
+              .select('*')
+              .order('display_order');
+            const { data: skills } = await supabase
+              .from('skills')
+              .select('*')
+              .order('display_order');
+            this.skillCategories = (cats || []).map((c) => ({
+              ...c,
+              skills: (skills || []).filter((s) => s.category_id === c.id),
+            }));
+            this.loading.skills = false;
+          },
+
+          // ═══════════════════════════ TIMELINE ═══════════════════════════
+          async fetchTimeline() {
+            this.loading.timeline = true;
+            const { data } = await supabase
+              .from('timeline')
+              .select('*')
+              .order('display_order');
+            this.timeline = data || [];
+            this.loading.timeline = false;
+          },
+
+          // ═══════════════════════════ TESTIMONIALS ═══════════════════════════
+          async fetchTestimonials() {
+            this.loading.testimonials = true;
+            const { data } = await supabase
+              .from('testimonials')
+              .select('*')
+              .order('display_order');
+            this.testimonials = data || [];
+            this.loading.testimonials = false;
+          },
+
+          // ═══════════════════════════ CONTACT FORM ═══════════════════════════
+          async submitContactForm() {
+            if (!this.form.name || !this.form.email || !this.form.message)
+              return;
+            this.form.sending = true;
+            const { error } = await supabase.from('contact_messages').insert([
+              {
+                name: this.form.name,
+                email: this.form.email,
+                subject: this.form.subject || '',
+                message: this.form.message,
+              },
+            ]);
+            this.form.sending = false;
+            if (error) {
+              this.toast = {
+                show: true,
+                type: 'error',
+                message: 'Something went wrong. Please email me directly.',
+              };
+            } else {
+              this.form.sent = true;
+              this.toast = {
+                show: true,
+                type: 'success',
+                message: "Message sent! I'll get back to you soon.",
+              };
+              setTimeout(() => {
+                this.form = {
+                  name: '',
+                  email: '',
+                  subject: '',
+                  message: '',
+                  sending: false,
+                  sent: false,
+                };
+              }, 3000);
+            }
+            setTimeout(() => {
+              this.toast.show = false;
+            }, 4000);
+          },
+
+          // ═══════════════════════════ TYPING ═══════════════════════════
+          startTyping() {
+            const tick = () => {
+              const role = this.roles[this.roleIdx] || 'Full Stack Developer';
+              if (!this.deleting) {
+                this.typedText = role.slice(0, this.charIdx + 1);
+                this.charIdx++;
+                if (this.charIdx === role.length) {
+                  this.deleting = true;
+                  setTimeout(tick, 1800);
+                  return;
+                }
+              } else {
+                this.typedText = role.slice(0, this.charIdx - 1);
+                this.charIdx--;
+                if (this.charIdx === 0) {
+                  this.deleting = false;
+                  this.roleIdx = (this.roleIdx + 1) % this.roles.length;
+                }
+              }
+              setTimeout(tick, this.deleting ? 38 : this.typingSpeed);
+            };
+            tick();
+          },
+        };
+      }
+    </script>
+  </body>
+</html>
