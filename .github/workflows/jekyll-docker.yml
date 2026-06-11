@@ -1,10 +1,10 @@
+# .github/workflows/deploy.yml
 name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [ main ]   # change to "master" if you use that
+    branches: [main]
 
-# Grant the GITHUB_TOKEN the permissions required for Pages deployment
 permissions:
   contents: read
   pages: write
@@ -14,11 +14,11 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     environment:
-      name: production       # your environment name
+      name: production
       url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Setup Pages
@@ -32,8 +32,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # Upload entire repository (or specify a folder)
-          path: '.'
+          path: "."
 
       - name: Deploy to GitHub Pages
         id: deployment
